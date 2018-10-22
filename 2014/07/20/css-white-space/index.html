@@ -1,0 +1,455 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>CSS中的white-space | Icewind Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Icewind">
+    
+    <meta name="description" content="最近在项目中遇到了一个需要呈现原文中就带有空格和换行符的邮件内容的需求，其中就用到了之前没怎么接触过的white-space属性，特此记录。">
+    
+    
+    
+    
+    <link rel="alternative" href="/atom.xml" title="Icewind Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/l_favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/l_retina.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/l_retina.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/l_rec.png" alt="Icewind Blog" title="Icewind Blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Icewind Blog">Icewind Blog</a></h1>
+				<h2 class="blog-motto">Share makes it a better world.</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="Search">
+					</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope="" itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/07/20/css-white-space/" title="CSS中的white-space" itemprop="url">CSS中的white-space</a>
+  </h1>
+  <p class="article-author">By
+      <a href="http://icewind-blog.com/about" title="Icewind" target="_blank">Icewind</a>
+  </p><p class="article-time">
+    <time datetime="2014-07-20T11:30:56.000Z" itemprop="datePublished">发表于2014-07-20</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#定义和用法"><span class="toc-number">1.</span> <span class="toc-text">定义和用法</span></a></li></ol>
+		
+		</div>
+		
+		<p>最近在项目中遇到了一个需要呈现原文中就带有空格和换行符的邮件内容的需求，其中就用到了之前没怎么接触过的white-space属性，特此记录。</p>
+<a id="more"></a>
+<h2 id="定义和用法"><a href="#定义和用法" class="headerlink" title="定义和用法"></a>定义和用法</h2><p>white-space 属性设置如何处理元素内的空白。<br>这个属性声明建立布局过程中如何处理元素中的空白符。值 pre-wrap 和 pre-line 是 CSS 2.1 中新增的。<br><img src="http://ww2.sinaimg.cn/mw690/7d25d640gw1eiji9cs5g2j20jv039aag.jpg" alt=""></p>
+<p>##可能的值<br><img src="http://ww1.sinaimg.cn/mw690/7d25d640gw1eijidtyupaj20k305fjtc.jpg" alt=""></p>
+<p>##区别示例<br>只写出它们的区别可能不好理解，还是通过实例来展现:</p>
+<p>首先看看原文字的排版，主要注意每行文字前的空格、文字间的空格和第一行和第二行之间空行以及文字的换行情况等。<br><img src="http://ww2.sinaimg.cn/mw690/7d25d640gw1eijj6szns4j20q503zmzd.jpg" alt=""></p>
+<p>接下来是包含以上5种<code>white-space</code>CSS属性的html代码示例和图片结果</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span> </span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span> </span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span>&gt;</span> </span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>white-space<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">    	p&#123;</span></span><br><span class="line"><span class="undefined">    		border: red 1px dotted;</span></span><br><span class="line"><span class="undefined">    		width: 600px;</span></span><br><span class="line"><span class="undefined">    	&#125;</span></span><br><span class="line"><span class="undefined">		.pre&#123;white-space: pre;&#125;</span></span><br><span class="line"><span class="undefined">		.normal&#123;white-space: normal;&#125;</span></span><br><span class="line"><span class="undefined">		.nowrap&#123;white-space: nowrap;&#125;</span></span><br><span class="line"><span class="undefined">		.pre-wrap&#123;white-space: pre-wrap;&#125;</span></span><br><span class="line"><span class="undefined">		.pre-line&#123;white-space: pre-line;&#125;</span></span><br><span class="line"><span class="undefined">    </span><span class="tag">&lt;/<span class="name">style</span>&gt;</span>	</span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"pre"</span>&gt;</span></span><br><span class="line">pre</span><br><span class="line">	在此，我们总结 Markdown 的优点如下：</span><br><span class="line"></span><br><span class="line">	纯文本，    所以兼容性极强，可以用所有文本编辑器打开。</span><br><span class="line">	让你专注于文字而不是排版。</span><br><span class="line">	格式转换方便，    Markdown 的文本你可以轻松转换为 html、电子书等。</span><br><span class="line">	Markdown     的标记语法有极好的可读性。当然，我们既然如此推崇 Markdown ，也必定会教会你使用 Markdown ，这也是本文的目的所在。</span><br><span class="line"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"normal"</span>&gt;</span></span><br><span class="line">normal</span><br><span class="line">	在此，我们总结 Markdown 的优点如下：</span><br><span class="line"></span><br><span class="line">	纯文本，    所以兼容性极强，可以用所有文本编辑器打开。</span><br><span class="line">	让你专注于文字而不是排版。</span><br><span class="line">	格式转换方便，    Markdown 的文本你可以轻松转换为 html、电子书等。</span><br><span class="line">	Markdown     的标记语法有极好的可读性。当然，我们既然如此推崇 Markdown ，也必定会教会你使用 Markdown ，这也是本文的目的所在。</span><br><span class="line"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"nowrap"</span>&gt;</span></span><br><span class="line">nowrap</span><br><span class="line">	在此，我们总结 Markdown 的优点如下：</span><br><span class="line"></span><br><span class="line">	纯文本，    所以兼容性极强，可以用所有文本编辑器打开。</span><br><span class="line">	让你专注于文字而不是排版。</span><br><span class="line">	格式转换方便，    Markdown 的文本你可以轻松转换为 html、电子书等。</span><br><span class="line">	Markdown     的标记语法有极好的可读性。当然，我们既然如此推崇 Markdown ，也必定会教会你使用 Markdown ，这也是本文的目的所在。</span><br><span class="line"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"pre-wrap"</span>&gt;</span></span><br><span class="line">pre-wrap</span><br><span class="line">	在此，我们总结 Markdown 的优点如下：</span><br><span class="line"></span><br><span class="line">	纯文本，    所以兼容性极强，可以用所有文本编辑器打开。</span><br><span class="line">	让你专注于文字而不是排版。</span><br><span class="line">	格式转换方便，    Markdown 的文本你可以轻松转换为 html、电子书等。</span><br><span class="line">	Markdown     的标记语法有极好的可读性。当然，我们既然如此推崇 Markdown ，也必定会教会你使用 Markdown ，这也是本文的目的所在。</span><br><span class="line"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"pre-line"</span>&gt;</span></span><br><span class="line">pre-line</span><br><span class="line">	在此，我们总结 Markdown 的优点如下：</span><br><span class="line"></span><br><span class="line">	纯文本，    所以兼容性极强，可以用所有文本编辑器打开。</span><br><span class="line">	让你专注于文字而不是排版。</span><br><span class="line">	格式转换方便，    Markdown 的文本你可以轻松转换为 html、电子书等。</span><br><span class="line">	Markdown     的标记语法有极好的可读性。当然，我们既然如此推崇 Markdown ，也必定会教会你使用 Markdown ，这也是本文的目的所在。</span><br><span class="line"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><img src="http://ww1.sinaimg.cn/mw690/7d25d640gw1eijjjpbkw3j20tv0iz7cc.jpg" alt=""></p>
+<p>从上面代码就可以看出：<br><code>pre</code>完全保存原文字的空格和换行；<br><code>normal</code>则会过滤掉原文自带的空格和换行，但是文字碰到父元素边界时会自动换行；<br><code>nowrap</code>除了会无视原文的空格和换行外，文字碰到父元素边界依然不换行，所以只会显示一行；<br><code>pre-wrap</code>与<code>pre-line</code>比较难区别，其中<code>pre-wrap</code>保存原文字中的空格，甚至连换行也保存了，但是它与<code>pre</code>的区别在于文字碰到父元素边界要自动换行，而不像<code>pre</code>要保持原文字排版不惜超过父元素边界，<code>pre-line</code>则只是保留了换行，合并了空格，同时遇到父元素边界也得自动换行。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/前端/">前端</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/CSS/">CSS</a><a href="/tags/HTML/">HTML</a>
+  </div>
+
+
+
+
+<div class="article-share" id="share">
+
+  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+     ralateuid:{"tsina":"2099631680"},hideMore:false}
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+1372070875864304" charset="utf-8"></script>      
+
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/2014/07/31/use-requestAnimationFrame-to-make-canvas-animation/" title="利用requestAnimationFrame方法来实现canvas动画">
+  <strong>上一篇：</strong><br>
+  <span>
+  利用requestAnimationFrame方法来实现canvas动画</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2014/07/08/write-blog-on-another-computer-and-some-tricks/" title="如何在一台新电脑上继续用hexo写博客及一些技巧">
+ <strong>下一篇：</strong><br> 
+ <span>如何在一台新电脑上继续用hexo写博客及一些技巧
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#定义和用法"><span class="toc-number">1.</span> <span class="toc-text">定义和用法</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/Node/" title="Node">Node<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端/" title="前端">前端<sup>22</sup></a></li>
+		
+			<li><a href="/categories/博客/" title="博客">博客<sup>2</sup></a></li>
+		
+			<li><a href="/categories/数码/" title="数码">数码<sup>1</sup></a></li>
+		
+			<li><a href="/categories/随笔/" title="随笔">随笔<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/AJAX/" title="AJAX">AJAX<sup>1</sup></a></li>
+		
+			<li><a href="/tags/CSS/" title="CSS">CSS<sup>9</sup></a></li>
+		
+			<li><a href="/tags/CSS3/" title="CSS3">CSS3<sup>1</sup></a></li>
+		
+			<li><a href="/tags/HTML/" title="HTML">HTML<sup>9</sup></a></li>
+		
+			<li><a href="/tags/HTML5/" title="HTML5">HTML5<sup>2</sup></a></li>
+		
+			<li><a href="/tags/IOS/" title="IOS">IOS<sup>1</sup></a></li>
+		
+			<li><a href="/tags/JSONP/" title="JSONP">JSONP<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Javascript/" title="Javascript">Javascript<sup>12</sup></a></li>
+		
+			<li><a href="/tags/Javscript/" title="Javscript">Javscript<sup>2</sup></a></li>
+		
+			<li><a href="/tags/Node/" title="Node">Node<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Rich-text-editor/" title="Rich text editor">Rich text editor<sup>1</sup></a></li>
+		
+			<li><a href="/tags/URL/" title="URL">URL<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Vue/" title="Vue">Vue<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Webpack/" title="Webpack">Webpack<sup>1</sup></a></li>
+		
+			<li><a href="/tags/browser/" title="browser">browser<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>1</sup></a></li>
+		
+			<li><a href="/tags/config/" title="config">config<sup>1</sup></a></li>
+		
+			<li><a href="/tags/hexo/" title="hexo">hexo<sup>3</sup></a></li>
+		
+			<li><a href="/tags/iWeb/" title="iWeb">iWeb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/jailbreak/" title="jailbreak">jailbreak<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+      <li><a href="http://bbs.byr.cn/" target="_blank" title="BYR">北邮人论坛</a></li>
+      <li><a href="http://yangjian.me" target="_blank" title="YangJian">Alimon's Blog</a></li>
+      <li><a href="http://zipperary.com/" target="_blank" title="zippera">Zippera's Blog</a></li>
+      <li><a href="http://wuchong.me/" target="_blank" title="WuChong">Jark's Blog</a></li>
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		
+		<a href="http://weibo.com/2099631680" target="_blank"><div class="author"></div></a>
+		
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m Icewind. For now I&#39;m a developer of FE in Hangzhou. <br>
+			I&#39;ll share my learning experience with you at this blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/2099631680" target="_blank" class="icon-weibo" title="weibo"></a>
+		
+		
+		<a href="https://github.com/icewind7030" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:liushichuan@163.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://zespia.tw/hexo/" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Pacman">Jacman</a> © 2018 
+		
+		<a href="http://icewind-blog.com/about" target="_blank" title="Icewind">Icewind</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+    c.click(function(){
+      ta.css('display', 'block').addClass('fadeIn');
+    });
+    o.click(function(){
+      ta.css('display', 'none');
+    });
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,320-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icewind"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox({
+      type: 'image'
+    });
+  }
+}); 
+</script>
+
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-51186401-1', 'icewind-blog.com');  
+ga('send', 'pageview');
+</script>
+
+
+<div id="totop">
+<a title="返回顶部"><img src="/img/scrollup.png"></a>
+</div>
+
+<script src="/js/totop.js"></script>
+
+<script type="text/x-mathjax-config"> 
+MathJax.Hub.Config({ 
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} 
+}); 
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+  </body>
+</html>

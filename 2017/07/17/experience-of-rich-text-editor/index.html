@@ -1,0 +1,500 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>开发富文本编辑器的一些经验教训 | Icewind Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Icewind">
+    
+    <meta name="description" content="最近我们的产品有一个需求是要在PC端做一个面向用户的书评编辑器，让用户和编辑在蜗牛读书上能方便快捷的编辑和产出一些优质的文章，它的主要难点就是富文本编辑器部分。">
+    
+    
+    
+    
+    <link rel="alternative" href="/atom.xml" title="Icewind Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/l_favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/l_retina.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/l_retina.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/l_rec.png" alt="Icewind Blog" title="Icewind Blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Icewind Blog">Icewind Blog</a></h1>
+				<h2 class="blog-motto">Share makes it a better world.</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="Search">
+					</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope="" itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/07/17/experience-of-rich-text-editor/" title="开发富文本编辑器的一些经验教训" itemprop="url">开发富文本编辑器的一些经验教训</a>
+  </h1>
+  <p class="article-author">By
+      <a href="http://icewind-blog.com/about" title="Icewind" target="_blank">Icewind</a>
+  </p><p class="article-time">
+    <time datetime="2017-07-17T02:59:32.000Z" itemprop="datePublished">发表于2017-07-17</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前端架构"><span class="toc-number">1.</span> <span class="toc-text">前端架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#webpack配置"><span class="toc-number">1.1.</span> <span class="toc-text">webpack配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#与Java-Web的结合"><span class="toc-number">1.2.</span> <span class="toc-text">与Java Web的结合</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#开发富文本编辑器的教训"><span class="toc-number">2.</span> <span class="toc-text">开发富文本编辑器的教训</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#富文本中的数据渲染"><span class="toc-number">2.1.</span> <span class="toc-text">富文本中的数据渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#富文本中的不可编辑区域"><span class="toc-number">2.2.</span> <span class="toc-text">富文本中的不可编辑区域</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#开发富文本编辑器的一些经验"><span class="toc-number">3.</span> <span class="toc-text">开发富文本编辑器的一些经验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#在开源富文本编辑器的基础上开发"><span class="toc-number">3.1.</span> <span class="toc-text">在开源富文本编辑器的基础上开发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#基于DOM的数据渲染"><span class="toc-number">3.2.</span> <span class="toc-text">基于DOM的数据渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#基于浏览器的document-execCommand-API进行开发"><span class="toc-number">3.3.</span> <span class="toc-text">基于浏览器的document.execCommand API进行开发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#富文本中的换行"><span class="toc-number">3.4.</span> <span class="toc-text">富文本中的换行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#富文本中的不可编辑区域-1"><span class="toc-number">3.5.</span> <span class="toc-text">富文本中的不可编辑区域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#将DOM转换为图片"><span class="toc-number">3.6.</span> <span class="toc-text">将DOM转换为图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#避免使用CDN来提高渲染速度"><span class="toc-number">3.7.</span> <span class="toc-text">避免使用CDN来提高渲染速度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Promise大法好"><span class="toc-number">3.8.</span> <span class="toc-text">Promise大法好</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<p>最近我们的产品有一个需求是要在PC端做一个面向用户的书评编辑器，让用户和编辑在蜗牛读书上能方便快捷的编辑和产出一些优质的文章，它的主要难点就是富文本编辑器部分。</p>
+<a id="more"></a>
+<p>这虽然是个业务需求，但是做业务的同时也要兼顾技术，所以在跟需求商量好不支持IE8之后，决定采用<code>Vue</code>来作为前端部分的技术架构。</p>
+<h2 id="前端架构"><a href="#前端架构" class="headerlink" title="前端架构"></a>前端架构</h2><h3 id="webpack配置"><a href="#webpack配置" class="headerlink" title="webpack配置"></a>webpack配置</h3><p><code>Vue</code>是一个非常优秀的前端MVVM框架，轻量、快速、文档友好又详细，代码组织也非常优雅，是我比较偏爱的MVVM架构。<code>Vue</code>官方提供了非常方便快速上手的脚手架<code>Vue-cli</code>，但是由于跟我们这边使用的Java Web架构有一些不太适合的地方，所以我并没有使用它，不过我也是对<code>Vue-cli</code>做了一番详细的学习后来搭建自己的<code>webpack</code>配置。</p>
+<p>下面是我的生产环境的部分webpack配置，其实并不复杂，因为我的业务场景也并不复杂，现在的各种插件功能也足够强大。</p>
+<blockquote>
+<p>webpack.prod.config.js</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">devtool: <span class="string">'source-map'</span>,</span><br><span class="line">plugins: [</span><br><span class="line">    <span class="keyword">new</span> CleanWebpackPlugin([<span class="string">'dist'</span>]),</span><br><span class="line">    <span class="keyword">new</span> ExtractTextPlugin(<span class="string">'[name].css'</span>),</span><br><span class="line">    <span class="keyword">new</span> webpack.DefinePlugin(&#123;</span><br><span class="line">        <span class="string">'process.env'</span>: &#123;</span><br><span class="line">            NODE_ENV: <span class="string">'"production"'</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;),</span><br><span class="line">    <span class="keyword">new</span> webpack.optimize.CommonsChunkPlugin(&#123;</span><br><span class="line">        name: <span class="string">'vendor'</span>,</span><br><span class="line">        minChunks: <span class="function"><span class="keyword">function</span>(<span class="params">module, count</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> (</span><br><span class="line">                <span class="built_in">module</span>.resource &amp;&amp;</span><br><span class="line">                /\.js$/.test(<span class="built_in">module</span>.resource) &amp;&amp;</span><br><span class="line">                <span class="built_in">module</span>.resource.indexOf(<span class="string">'node_modules'</span>) &gt;= <span class="number">0</span></span><br><span class="line">            )</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;),</span><br><span class="line">    <span class="keyword">new</span> webpack.optimize.CommonsChunkPlugin(&#123;</span><br><span class="line">        name: <span class="string">'manifest'</span>,</span><br><span class="line">        filename: <span class="string">'manifest.js'</span>,</span><br><span class="line">        chunks: [<span class="string">'vendor'</span>]</span><br><span class="line">    &#125;),</span><br><span class="line">    <span class="keyword">new</span> webpack.optimize.UglifyJsPlugin(&#123;</span><br><span class="line">        sourceMap: <span class="literal">true</span>,</span><br><span class="line">        compress: &#123;</span><br><span class="line">            warnings: <span class="literal">false</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;),</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>主要就是借鉴了<code>Vue-cli</code>中的code split思路，开发环境的webpack配置区别不大，只是sourcmap设置改为了<code>devtool: &#39;#cheap-module-eval-source-map&#39;</code>,去掉了代码压缩等。</p>
+<p>需要注意的一点是，我在生成环境下的webpack配置中使用了<code>vue-loader</code>附带的<code>postcss</code>预处理器中的<code>cssnano</code>插件进行css部分的代码压缩，但是这个插件打包时会将<code>z-index:10</code>压缩成<code>z-index:1</code>，需要添加设置<code>zindex: false</code>才能避免这个问题,而且<code>cssnano</code>插件默认还有一个特性就是会删除没有使用到的css部分，比如我们为CSS3动画所需构建的<code>keyframes</code>，居然也会被<code>cssnano</code>认为是没有被使用的css，压缩过程中也删掉了，这个就有点费解了，所以为了避免这种情况，我们需要增加设置<code>discardUnused: false</code>：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">rules: [&#123;</span><br><span class="line">    test: <span class="regexp">/\.vue$/</span>,</span><br><span class="line">    loader: <span class="string">'vue-loader'</span>,</span><br><span class="line">    options: &#123;</span><br><span class="line">        loaders: &#123;</span><br><span class="line">            css: ExtractTextPlugin.extract(&#123;</span><br><span class="line">                use: <span class="string">'css-loader'</span>,</span><br><span class="line">                fallback: <span class="string">'vue-style-loader'</span></span><br><span class="line">            &#125;),</span><br><span class="line">            scss: ExtractTextPlugin.extract(&#123;</span><br><span class="line">                use: [<span class="string">'css-loader'</span>,<span class="string">'sass-loader'</span>],</span><br><span class="line">                fallback: <span class="string">'vue-style-loader'</span></span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;,</span><br><span class="line">        postcss: [</span><br><span class="line">            <span class="built_in">require</span>(<span class="string">'autoprefixer'</span>)(&#123;</span><br><span class="line">                browsers: [<span class="string">'&gt; 1%'</span>]</span><br><span class="line">            &#125;),</span><br><span class="line">            <span class="built_in">require</span>(<span class="string">'cssnano'</span>)(&#123;</span><br><span class="line">                zindex: <span class="literal">false</span>,</span><br><span class="line">                discardUnused: <span class="literal">false</span></span><br><span class="line">            &#125;)</span><br><span class="line">        ], </span><br><span class="line">    &#125;</span><br><span class="line">&#125;]</span><br></pre></td></tr></table></figure></p>
+<h3 id="与Java-Web的结合"><a href="#与Java-Web的结合" class="headerlink" title="与Java Web的结合"></a>与Java Web的结合</h3><p>为了将css文件抽离出来，我在开发环境也没有使用<strong>Hot Module Reload</strong>机制(使用了ExtractTextPlugin抽离css文件后，修改css样式不能通过<strong>HMR</strong>自动更新，需手动刷新)。</p>
+<p>我们部门这边的Java Web除了一些简单的静态活动页，主要页面的承载页都会配置在另外的一个存放<code>freeMarker</code>的ftl文件的文件夹中，有别于静态文件的存放位置，这是部门中的Java Web一直沿用的文件结构，不好也没太大必要去改变它。</p>
+<p>这就使得<code>Vue-cli</code>或者一些常见的webpack配置中的根据文件hash生成打包文件再使用<code>html-webpack-plugin</code>自动注入承载页的功能不太好实现，所以就需要结合部门自己的情况定制比较符合自己项目的打包流程。</p>
+<p>我们有个网站应用自动部署平台，它的功能除了解析和编译后端工程代码，还会自动分析页面引用的静态资源，然后将资源的URL替换为对应的CDN域名的下的资源链接并添加资源MD5值相关的查询值后缀，比如<code>/static/js/app.js</code>会在自动部署后变成<code>//yuedust.yuedu.126.net/snail_st/static/js/app.js?a63ed8a8</code>。</p>
+<p>所以既然目前项目中已经有了CDN域名替换和文件hash计算的功能，我在webpack打包中就没必要再多此一举了，而且，我还可以利用这一特性，固定的设置承载页引用的静态资源的URL，部分代码如下：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype html&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"zh-cmn-Hans"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"X-UA-Compatible"</span> <span class="attr">content</span>=<span class="string">"IE=edge,chrome=1"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">"viewport"</span> <span class="attr">content</span>=<span class="string">"width=device-width, initial-scale=1, user-scalable=no"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"shortcut icon"</span> <span class="attr">href</span>=<span class="string">"/static/images/favicon.ico"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>蜗牛阅读-书评编辑<span class="tag">&lt;/<span class="name">title</span>&gt;</span>   </span><br><span class="line">    <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"stylesheet"</span> <span class="attr">href</span>=<span class="string">"/static/bookreview/dist/app.css"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"hidden"</span> <span class="attr">id</span>=<span class="string">"csrfToken"</span> <span class="attr">name</span>=<span class="string">"csrfToken"</span> <span class="attr">value</span>=<span class="string">"$&#123;csrfToken!?html&#125;"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span>    </span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"/static/bookreview/dist/manifest.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"/static/bookreview/dist/vendor.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"/static/bookreview/dist/app.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>这样设置好后无论本地开发还是部署线上都不需要再修改ftl文件的内容了，既有效的利用到了<strong>Code Split</strong>加快打包速度和缓存利用率高的优点，也使得开发和部署变得简单，页面引用的静态资源一旦添加，就不需要再去更改路径了。</p>
+<p><strong>当然，这只是结合自己项目的Java Web工程结构和特点设置的一套webpack使用方式，仅供参考</strong></p>
+<h2 id="开发富文本编辑器的教训"><a href="#开发富文本编辑器的教训" class="headerlink" title="开发富文本编辑器的教训"></a>开发富文本编辑器的教训</h2><p>由于项目的时间较紧张，我在页面上应用了<code>Vue</code>框架的背景下，想当然的想要把<code>Vue</code>也应用于富文本编辑器的开发，事实证明这是不太可行的。</p>
+<h3 id="富文本中的数据渲染"><a href="#富文本中的数据渲染" class="headerlink" title="富文本中的数据渲染"></a>富文本中的数据渲染</h3><p><code>Vue</code>是数据和展现双向绑定的，这使得特定格式的数据渲染成对应的html非常的方便。</p>
+<p>但是网页上的富文本编辑器普遍都是利用的是元素的<code>contenteditable</code>属性，这个属性是无法实现双向绑定的，要想实时保存富文本数据，只能监控元素的输入事件，然后读取元素的<code>innerText</code>后再去修改数据，但是一旦修改了数据，就会触发<code>Vue</code>的视图更新，导致你编辑元素的<code>innerText</code>被重新渲染，元素一旦被重新渲染，用户输入时的获取的光标焦点就消失了，而且在<strong>windows</strong>和<strong>mac os</strong>下的输入法实现有些不一样,mac下的输入法输入中文会先将用户输入的拼写填充到输入元素中，导致获取的innerText不准确，所以想要利用<code>Vue</code>的数据双向绑定机制来开发富文本部分，又想要实现数据的实时保存，存在很多问题。</p>
+<h3 id="富文本中的不可编辑区域"><a href="#富文本中的不可编辑区域" class="headerlink" title="富文本中的不可编辑区域"></a>富文本中的不可编辑区域</h3><p>我们的书评内容的数据结构是一个各种<strong>item</strong>类型组成数组，<strong>item</strong>的类型有：文字、图片、书籍和笔记，富文本编辑器需要将这些数据展现出来并且可编辑，其中书籍和笔记的数据结构只能添加或者删除，而不能修改，这就与传统的富文本编辑器存在一定的区别，即富文本编辑器区域需要插入或者删除不能修改的元素。这个需求使得一个普通的富文本编辑器变得特殊起来，一开始我的思路是在<code>contenteditable=&quot;true&quot;</code>的编辑器主体内插入<code>contenteditable=&quot;false&quot;</code>的dom结构，这导致插入部分的文本无法与编辑器很好的交互，包括删除、撤销、选中等，最后找到了另外一种比较理想的解决办法。</p>
+<h2 id="开发富文本编辑器的一些经验"><a href="#开发富文本编辑器的一些经验" class="headerlink" title="开发富文本编辑器的一些经验"></a>开发富文本编辑器的一些经验</h2><p>以下是我在开发一个本业务场景下的富文本编辑器的一些经验：</p>
+<h3 id="在开源富文本编辑器的基础上开发"><a href="#在开源富文本编辑器的基础上开发" class="headerlink" title="在开源富文本编辑器的基础上开发"></a>在开源富文本编辑器的基础上开发</h3><p>知乎上有个问题，叫做<a href="https://www.zhihu.com/question/38699645" target="_blank" rel="noopener">为什么都说富文本编辑器是天坑？</a>，里面提到的很多开发富文本编辑器会遇到的一些难点，而我的第一版也是想着自己从头开始开发，但是的确碰到了很多没想到的问题，修修补补最终结果还是不满意。</p>
+<p>所以如果是需要一个常规功能的富文本编辑器，尽量选择成熟稳定的开源项目，保证稳定可靠，如果需要像我一样开发一个符合特定业务场景的富文本编辑器，也尽量在开源项目的基础上进行二次开发，这样虽然会有一些代码冗余，但是能帮助你避开许多前人已经踩过的坑，而且也能从阅读这些项目的源码中学习到不少忽视的知识和特性。</p>
+<p>我选择的是国内的一个个人开发者维护的叫做<a href="http://www.wangeditor.com/" target="_blank" rel="noopener">wangEditor</a>的项目，它比较轻量，源码也比较清晰便于二次开发。</p>
+<h3 id="基于DOM的数据渲染"><a href="#基于DOM的数据渲染" class="headerlink" title="基于DOM的数据渲染"></a>基于DOM的数据渲染</h3><p>要想在WEB端实现富文本编辑，经过我踩的一些坑，我觉得最终还是要回归于<strong>DOM</strong>的，<code>Vue</code>或者其他MVVM框架确实给开发和维护带来很大的遍历，但是在富文本编辑这块，还是没有DOM API来的可控。我的方案是根据服务端提供的一篇书评的<code>items</code>，组织出相应的HTML，然后再交给富文本编辑器进行初始化。</p>
+<h3 id="基于浏览器的document-execCommand-API进行开发"><a href="#基于浏览器的document-execCommand-API进行开发" class="headerlink" title="基于浏览器的document.execCommand API进行开发"></a>基于浏览器的<code>document.execCommand</code> API进行开发</h3><p>当一个HTML文档处于设计模式(<code>designMode</code>)或者一个HTML元素设置了<code>contentEditable=&quot;true&quot;</code>时，我们可以使用<code>execCommand</code>方法，运行一些命令来操纵可编辑区域的内容，这个API可以快速可靠的对富文本区域的选区内容进行一系列的操作，最关键是，支持<strong>撤销</strong>和<strong>重做</strong>功能，并且在撤销和重做的过程中能够完美的保持选区的状态，这一点非常重要，我们可以通过保存html来实现内容的撤销和重做，但是选区或者说光标的撤销和重做，用Javascript很难完美的控制,如果只是保存之前选区的<code>range</code>对象，是不能复原选区或者光标的。</p>
+<p>具体支持的API可以参考<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Document/execCommand" target="_blank" rel="noopener">MDN</a>的文档。</p>
+<p>即使对于一些文档中不支持的API，也建议通过以上API来组合实现，比如一段HTML内容的替换，应该先通过Javascript建立相应的选区，然后运行<code>delete</code>命令删除该段内容，再通过<code>insertHTML</code>来插入所需的HTML，这样才能充分的利用浏览器的撤销和重做功能，并且与其他的操作串联起来。</p>
+<h3 id="富文本中的换行"><a href="#富文本中的换行" class="headerlink" title="富文本中的换行"></a>富文本中的换行</h3><p>富文本编辑器中的换行是一个值得注意的问题，我在开发书评编辑器的时候，遇到了一些问题：</p>
+<p>富文本中展示换行看起来很容易，有几个方案，比如设置<code>CSS</code>的<code>white-space</code>再配合换行符，或者在<code>DOM</code>中添加<code>&lt;br&gt;</code>元素，看起来都能达到目的。但是书评编辑器特殊的地方在于，这是一个<strong>已经制定好了数据结构</strong>并且在客户端上也有编辑器，这就涉及到<strong>Web</strong>、<strong>iOS</strong>、<strong>Andorid</strong>三个端的一致性问题。</p>
+<ul>
+<li>因为在客户端上是没有<code>&lt;br&gt;</code>概念的,客户端编辑器上需要换行位置插入的都是回车符，也就是<code>\n</code>，而这些换行符在WEB上如果需要显示成换行，就需要设置<code>white-space</code>为<code>pre</code>或者<code>pre-line</code></li>
+<li>如果设置为<code>white-space: pre;</code>，确实可以原样显示文本换行，但是如果是这样一条数据：<br><img src="http://ww1.sinaimg.cn/large/7d25d640gy1fimrkn494kj20ka00ua9w.jpg" alt=""><br>这是书评中的一条文本数据，其中有两个换行符，代表要展示成三行，其中有一个空行，实际需要展示的效果是下图这样的：<br><img src="http://ww1.sinaimg.cn/large/7d25d640gy1fimrtbjiupj20hu03f0sl.jpg" alt=""><br>这样的数据如果要展示在一个DOM节点中，设置为<code>white-space: pre;</code>,换行虽然保留了，但是由于第一行数据是连续的，<code>white-space: pre;</code>原样保持了数据的换行，导致了第一行超出了DOM的最大宽度，这样的方式显然就行不通了。<br><img src="http://ww1.sinaimg.cn/large/7d25d640gy1fimrpfkex4j20j903f3yc.jpg" alt=""></li>
+<li>如果设置成<code>white-space: pre-line</code>，<code>pre-line</code>可以在正确显示换行符的同时让超出一行的文字自动换到下一行，看起来很完美。但是，一旦在换行符之后（比如中间空的那行）输入文字，问题又出现了，在<code>white-space: pre-line</code>的元素中，如果在换行符之后输入文字，换行符会被删除，文字将会跳动到上一行继续显示，这样显然是不行的。</li>
+<li>最终的方案只有剩插入<code>&lt;br&gt;</code>元素来实现换行了，通过<code>&lt;br&gt;</code>实现的换行，不会出现输入文字换行失效的问题，也不需要父元素设置<code>white-space: pre;</code>，所以我们需要将客户端在文本中插入的<code>\n</code>转换成<code>&lt;br&gt;</code>，最后把HTML结构重新解析成书评数据的时候，又需要将它们转换回来以便保证客户端编辑和展示的一致性，当然这中间还有一系列的转换逻辑,包括针对客户端老版本的编辑器的一些BUG做的兼容，最后为了实现一致还是废了一番功夫的。</li>
+</ul>
+<h3 id="富文本中的不可编辑区域-1"><a href="#富文本中的不可编辑区域-1" class="headerlink" title="富文本中的不可编辑区域"></a>富文本中的不可编辑区域</h3><p><img src="http://ww1.sinaimg.cn/large/7d25d640gy1fhmxzlovulj20ge03et8x.jpg" alt=""><br><img src="http://ww1.sinaimg.cn/large/7d25d640gy1fhmy0aqo5rj20ge03cjrg.jpg" alt=""><br>如上面两图，我们的书评中有一部分内容是用户引用的某一本书籍、或是用户在阅读时记录的书籍原文，这些数据结构都是不能被修改的，只能插入或者删除，一开始我的思路是把该部分DOM结构设置为<code>contenteditable=&quot;false&quot;</code>,但是这样的设置代码上不管怎么去弥补体验上都不够好。</p>
+<p>后来我转变了思路，既然这就是一段不可编辑只能观看的DOM，而富文本编辑器里插入的图片是能够很好的与文字一起被很好的操作和维护的，那么为什么不把不可编辑的展示区域直接转换为图片插入到富文本区域呢，事实证明这个思路最后的体验非常好，除了一个小的技术问题，下面一点会说明。</p>
+<h3 id="将DOM转换为图片"><a href="#将DOM转换为图片" class="headerlink" title="将DOM转换为图片"></a>将DOM转换为图片</h3><p>要将一个DOM转化为图片，社区里已经有不少很成熟的开源库可以使用，比如我使用的是<a href="https://github.com/tsayen/dom-to-image" target="_blank" rel="noopener">dom-to-image</a>，需要注意的就是一个问题：DOM转化为图片，基本都利用到了<code>canvas</code>的<code>toDataUrl()</code>功能将图片转化转化为base64编码的URL，这里面有一个安全策略，就是如果<code>canvas</code>中绘制的DOM结构中有图片，而该图片与当前页面的域名不一样（这在我们的开发场景中很常见），出于安全策略的限制，此时浏览器是不允许调用<code>canvas</code>的<code>toDataUrl()</code>方法的，而我们的书籍卡片中必定会有书籍的封面，该封面的域名是我们的CDN域名，所以转换成图片被限制了。<br><img src="http://ww1.sinaimg.cn/large/7d25d640gy1fhmzhxp1y4j20n403rq3h.jpg" alt=""><br>要想解决这个办法，就涉及到一个前端的<code>IMG</code>标签的属性：<code>crossOrigin</code>,如果将这个属性设置为<code>anonymous</code>,浏览器就会为这张图片的请求的<code>Request Headers</code> 中附带<code>Origin</code>为当前域名的这一行信息，告诉图片所在的静态资源服务器，这张图片我需要跨域访问以及我的域名，请在图片的<code>Response Headers</code>中附加<code>Access-Control-Allow-Methods</code>和<code>Access-Control-Allow-Origin</code>这两行信息,如下图：<br><img src="http://ww1.sinaimg.cn/large/7d25d640gy1fhmywepnduj20gx0d7q46.jpg" alt=""><br>这样请求得到的图片渲染到<code>canvas</code>中，浏览器才不会限制该<code>canvas</code>转化为base64的URL。</p>
+<p>这一特性需要服务端的支持，有的服务端就算附加了这个<code>Request Headers</code>字段依然不会返回想要的<code>Response</code>。</p>
+<p>但是在支持这一特性的服务端，有时候设置了<code>crossOrigin=&quot;anonymous&quot;</code>依然显示这个错误，不是这个属性没生效，而是我们的图片一般是存放在CDN上的，而CDN为了更快的返回用户的请求，会把图片的响应缓存下来，而这些缓存下来的响应显然是没有<code>Access-Control-Allow-Methods</code>和<code>Access-Control-Allow-Origin</code>这两行信息的，所以这时候即使我们认为自己的请求包含了<code>crossOrigin=&quot;anonymous&quot;</code>，CDN服务器不认为这是一个不同的请求，所以返回给我们的响应是之前就缓存好的，导致了这个问题的发生。</p>
+<p>这种情况就需要我们为我们请求的图片URL后添加一个时间戳来避免CDN服务器的缓存。</p>
+<h3 id="避免使用CDN来提高渲染速度"><a href="#避免使用CDN来提高渲染速度" class="headerlink" title="避免使用CDN来提高渲染速度"></a>避免使用CDN来提高渲染速度</h3><p>前端开发中说到提高页面的加载速度，一般都会提到最大限度的利用CDN缓存静态资源，以提高静态资源的访问速度，从而更快的将网页内容呈现给用户。</p>
+<p>但是，我上面提到的将含有<strong>跨域CDN图片</strong>的<code>DOM</code>节点渲染成图片的情况下，向<strong>CDN代理节点</strong>请求图片资源反而会比我们直接向<strong>静态资源源站点</strong>请求要来的慢，其实这也很好理解：</p>
+<ul>
+<li>为了将含有跨域CDN图片的<code>DOM</code>利用<code>HTML5`</code>canvas<code>API渲染成图片，我们就需要为该图片的添加</code>crossOrigin=”anonymous”`属性，并且为图片的请求URL添加一个时间戳</li>
+<li>如果我们访问的是CDN域名下的图片，同时又为URL添加了一个全新的时间戳，那么这个图片资源的请求对于CDN代理节点来说肯定是全新的，也就是会认为本节点上没有这个资源的缓存</li>
+<li>CDN代理节点遇到一个自己没有缓存的资源，它就会向静态资源的源站点去请求，得到结果后再转发给用户，这等于说我们这个带有时间戳的图片URL的请求，不但没能利用的CDN的缓存提速，反而由CDN代理节点充当了一次中介，这显然会增加资源的返回耗时<br><img src="http://ww1.sinaimg.cn/large/7d25d640gy1fi35ks1pm0j20kk0263ys.jpg" alt=""><br><img src="http://ww1.sinaimg.cn/large/7d25d640gy1fi35kw8wc0j20kl02eq38.jpg" alt=""><br>上面两图分别就是请求CDN域名图片的耗时和请求源站点图片的耗时，经过多次测试，可以发现请求CDN域名图片的耗时基本在200ms以上，而向源站点的请求基本都在100ms以下，所以，有的时候，比如这种特殊情况下，请求CDN域名下的资源可能反而会增加请求的耗时。</li>
+</ul>
+<h3 id="Promise大法好"><a href="#Promise大法好" class="headerlink" title="Promise大法好"></a>Promise大法好</h3><p>根据上面提到的流程，需要我把从服务端拿到的一个包含各种类型<strong>item</strong>的数组解析成一个HTML字符串，其中包含了书籍和笔记类型的<strong>item</strong>需要转化成的base64格式的图片，这就出现了时序上的问题：</p>
+<p>文本和图片类型的<strong>item</strong>，可以直接得到对应的HTML字符串，而书籍和笔记类型的<strong>item</strong>，则需要通过网络请求和canvas转换，但是最终我又需要得到整个的初始HTML内容来初始化富文本编辑器，然后再让用户可以去在这些HTML DOM节点上进行编辑，这就需要用到<code>Promise.all</code>这个API了，代码示例如下：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 将服务端返回的书评items转换为html string传输给富文本编辑器</span></span><br><span class="line"><span class="comment"> * @param  &#123;json array&#125; items 书评items</span></span><br><span class="line"><span class="comment"> * @return &#123;promise&#125;       所有items处理好后返回resolve(htmlStr), 否则reject(error)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">convertItemsToHtml(items)&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span> ( <span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> htmlStr = <span class="string">''</span>;</span><br><span class="line">        <span class="keyword">let</span> itemStr = <span class="string">''</span>;</span><br><span class="line">        <span class="keyword">let</span> itemPromises = items.map( <span class="function"><span class="params">item</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>( <span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">switch</span>(item.resourceType)&#123;</span><br><span class="line">                    <span class="keyword">case</span> <span class="string">'Text'</span>:</span><br><span class="line">                        itemStr =  <span class="string">`&lt;p data-type="Text"&gt;<span class="subst">$&#123;item.text&#125;</span>&lt;/p&gt;`</span>;</span><br><span class="line">                        resolve(itemStr);</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    ...</span><br><span class="line">                    <span class="keyword">case</span> <span class="string">'BookNote'</span>:</span><br><span class="line">                        <span class="keyword">let</span> $BookNoteEle = $(<span class="string">`&lt;div class="editor__note image__render"&gt;<span class="subst">$&#123;item.bookNote.markText&#125;</span>&lt;/div&gt;`</span>).appendTo($(<span class="string">'body'</span>));</span><br><span class="line">                        domtoimage.toPng($BookNoteEle[<span class="number">0</span>], &#123;<span class="attr">style</span>: &#123;<span class="attr">opacity</span>: <span class="number">1</span>, <span class="attr">zIndex</span>: <span class="number">1</span>&#125;&#125;)</span><br><span class="line">                            .then(<span class="function"><span class="keyword">function</span> (<span class="params">dataUrl</span>) </span>&#123;</span><br><span class="line">                                itemStr =  <span class="string">`&lt;p data-type="BookNote"&gt;&lt;img data-type="BookNote" data-item='<span class="subst">$&#123;<span class="built_in">escape</span>(<span class="built_in">JSON</span>.stringify(item))&#125;</span>' class="editor__img" src="<span class="subst">$&#123;dataUrl&#125;</span>"&gt;&lt;/p&gt;`</span>;</span><br><span class="line">                                $BookNoteEle.remove();</span><br><span class="line">                                resolve(itemStr);</span><br><span class="line">                            &#125;)</span><br><span class="line">                            .catch(<span class="function"><span class="keyword">function</span> (<span class="params">error</span>) </span>&#123;</span><br><span class="line">                                <span class="built_in">console</span>.error(<span class="string">'图片生成失败'</span>, error);</span><br><span class="line">                                reject(error);</span><br><span class="line">                            &#125;);</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;)</span><br><span class="line">        <span class="built_in">Promise</span>.all(itemPromises).then( <span class="function">(<span class="params">[...itemStrs]</span>) =&gt;</span> &#123;</span><br><span class="line">            htmlStr = itemStrs.reduce( <span class="function">(<span class="params">acc, val</span>) =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> acc + val</span><br><span class="line">            &#125;, <span class="string">''</span>);</span><br><span class="line">            resolve(htmlStr);</span><br><span class="line">        &#125;).catch( <span class="function">(<span class="params">error</span>) =&gt;</span> &#123;</span><br><span class="line">            reject(error);</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>利用<code>Promise.all</code>和其他一些ES6的特性，可以使我们的代码变得更加强大而简洁。</p>
+<p>以上就是我在开发特定业务需求的富文本编辑器中遇到的一些问题和总结的一些经验，可能会有一些错误，希望帮忙指正。<br>其他一些常见的富文本编辑中会遇到的问题，可以通过学习一些开源的成熟富文本编辑器项目来得到解答。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/前端/">前端</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Javscript/">Javscript</a><a href="/tags/Vue/">Vue</a><a href="/tags/Rich-text-editor/">Rich text editor</a>
+  </div>
+
+
+
+
+<div class="article-share" id="share">
+
+  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+     ralateuid:{"tsina":"2099631680"},hideMore:false}
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+1372070875864304" charset="utf-8"></script>      
+
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/2017/07/19/introduce-casperjs/" title="CasperJS介绍">
+  <strong>上一篇：</strong><br>
+  <span>
+  CasperJS介绍</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/02/14/webpack-config/" title="webpack常用配置详解">
+ <strong>下一篇：</strong><br> 
+ <span>webpack常用配置详解
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前端架构"><span class="toc-number">1.</span> <span class="toc-text">前端架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#webpack配置"><span class="toc-number">1.1.</span> <span class="toc-text">webpack配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#与Java-Web的结合"><span class="toc-number">1.2.</span> <span class="toc-text">与Java Web的结合</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#开发富文本编辑器的教训"><span class="toc-number">2.</span> <span class="toc-text">开发富文本编辑器的教训</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#富文本中的数据渲染"><span class="toc-number">2.1.</span> <span class="toc-text">富文本中的数据渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#富文本中的不可编辑区域"><span class="toc-number">2.2.</span> <span class="toc-text">富文本中的不可编辑区域</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#开发富文本编辑器的一些经验"><span class="toc-number">3.</span> <span class="toc-text">开发富文本编辑器的一些经验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#在开源富文本编辑器的基础上开发"><span class="toc-number">3.1.</span> <span class="toc-text">在开源富文本编辑器的基础上开发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#基于DOM的数据渲染"><span class="toc-number">3.2.</span> <span class="toc-text">基于DOM的数据渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#基于浏览器的document-execCommand-API进行开发"><span class="toc-number">3.3.</span> <span class="toc-text">基于浏览器的document.execCommand API进行开发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#富文本中的换行"><span class="toc-number">3.4.</span> <span class="toc-text">富文本中的换行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#富文本中的不可编辑区域-1"><span class="toc-number">3.5.</span> <span class="toc-text">富文本中的不可编辑区域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#将DOM转换为图片"><span class="toc-number">3.6.</span> <span class="toc-text">将DOM转换为图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#避免使用CDN来提高渲染速度"><span class="toc-number">3.7.</span> <span class="toc-text">避免使用CDN来提高渲染速度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Promise大法好"><span class="toc-number">3.8.</span> <span class="toc-text">Promise大法好</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/Node/" title="Node">Node<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端/" title="前端">前端<sup>22</sup></a></li>
+		
+			<li><a href="/categories/博客/" title="博客">博客<sup>2</sup></a></li>
+		
+			<li><a href="/categories/数码/" title="数码">数码<sup>1</sup></a></li>
+		
+			<li><a href="/categories/随笔/" title="随笔">随笔<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/AJAX/" title="AJAX">AJAX<sup>1</sup></a></li>
+		
+			<li><a href="/tags/CSS/" title="CSS">CSS<sup>9</sup></a></li>
+		
+			<li><a href="/tags/CSS3/" title="CSS3">CSS3<sup>1</sup></a></li>
+		
+			<li><a href="/tags/HTML/" title="HTML">HTML<sup>9</sup></a></li>
+		
+			<li><a href="/tags/HTML5/" title="HTML5">HTML5<sup>2</sup></a></li>
+		
+			<li><a href="/tags/IOS/" title="IOS">IOS<sup>1</sup></a></li>
+		
+			<li><a href="/tags/JSONP/" title="JSONP">JSONP<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Javascript/" title="Javascript">Javascript<sup>12</sup></a></li>
+		
+			<li><a href="/tags/Javscript/" title="Javscript">Javscript<sup>2</sup></a></li>
+		
+			<li><a href="/tags/Node/" title="Node">Node<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Rich-text-editor/" title="Rich text editor">Rich text editor<sup>1</sup></a></li>
+		
+			<li><a href="/tags/URL/" title="URL">URL<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Vue/" title="Vue">Vue<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Webpack/" title="Webpack">Webpack<sup>1</sup></a></li>
+		
+			<li><a href="/tags/browser/" title="browser">browser<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>1</sup></a></li>
+		
+			<li><a href="/tags/config/" title="config">config<sup>1</sup></a></li>
+		
+			<li><a href="/tags/hexo/" title="hexo">hexo<sup>3</sup></a></li>
+		
+			<li><a href="/tags/iWeb/" title="iWeb">iWeb<sup>1</sup></a></li>
+		
+			<li><a href="/tags/jailbreak/" title="jailbreak">jailbreak<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+      <li><a href="http://bbs.byr.cn/" target="_blank" title="BYR">北邮人论坛</a></li>
+      <li><a href="http://yangjian.me" target="_blank" title="YangJian">Alimon's Blog</a></li>
+      <li><a href="http://zipperary.com/" target="_blank" title="zippera">Zippera's Blog</a></li>
+      <li><a href="http://wuchong.me/" target="_blank" title="WuChong">Jark's Blog</a></li>
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		
+		<a href="http://weibo.com/2099631680" target="_blank"><div class="author"></div></a>
+		
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m Icewind. For now I&#39;m a developer of FE in Hangzhou. <br>
+			I&#39;ll share my learning experience with you at this blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/2099631680" target="_blank" class="icon-weibo" title="weibo"></a>
+		
+		
+		<a href="https://github.com/icewind7030" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:liushichuan@163.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://zespia.tw/hexo/" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Pacman">Jacman</a> © 2018 
+		
+		<a href="http://icewind-blog.com/about" target="_blank" title="Icewind">Icewind</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+    c.click(function(){
+      ta.css('display', 'block').addClass('fadeIn');
+    });
+    o.click(function(){
+      ta.css('display', 'none');
+    });
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,320-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icewind"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox({
+      type: 'image'
+    });
+  }
+}); 
+</script>
+
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-51186401-1', 'icewind-blog.com');  
+ga('send', 'pageview');
+</script>
+
+
+<div id="totop">
+<a title="返回顶部"><img src="/img/scrollup.png"></a>
+</div>
+
+<script src="/js/totop.js"></script>
+
+<script type="text/x-mathjax-config"> 
+MathJax.Hub.Config({ 
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} 
+}); 
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+  </body>
+</html>
