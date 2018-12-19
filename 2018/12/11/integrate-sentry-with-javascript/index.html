@@ -1,0 +1,563 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>如何使用Sentry监控前端错误 | Icewind Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Icewind">
+    
+    <meta name="description" content="前端中开发难免遇到一些测试阶段没有覆盖到的错误和问题，这些问题一旦发生在用户端，问题的沟通和定位成本就会很高，所以我们需要一个能够自动监控错误并且上报详细信息的平台，Sentry就是提供这样一个服务的产品。本文主要介绍前端项目中如何集成Sentry来完成错误的监控。">
+    
+    
+    
+    
+    <link rel="alternative" href="/atom.xml" title="Icewind Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/l_favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/l_retina.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/l_retina.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/l_rec.png" alt="Icewind Blog" title="Icewind Blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Icewind Blog">Icewind Blog</a></h1>
+				<h2 class="blog-motto">Share makes it a better world.</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="Search">
+					</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope="" itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2018/12/11/integrate-sentry-with-javascript/" title="如何使用Sentry监控前端错误" itemprop="url">如何使用Sentry监控前端错误</a>
+  </h1>
+  <p class="article-author">By
+      <a href="http://icewind-blog.com/about" title="Icewind" target="_blank">Icewind</a>
+  </p><p class="article-time">
+    <time datetime="2018-12-11T06:13:41.000Z" itemprop="datePublished">发表于2018-12-11</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概念"><span class="toc-number">2.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#角色"><span class="toc-number">3.</span> <span class="toc-text">角色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#接入"><span class="toc-number">4.</span> <span class="toc-text">接入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#新建项目"><span class="toc-number">4.1.</span> <span class="toc-text">新建项目</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#接入SDK"><span class="toc-number">4.2.</span> <span class="toc-text">接入SDK</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SDK默认集成的功能"><span class="toc-number">4.3.</span> <span class="toc-text">SDK默认集成的功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#通用可选集成"><span class="toc-number">4.4.</span> <span class="toc-text">通用可选集成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#特定框架的集成"><span class="toc-number">4.5.</span> <span class="toc-text">特定框架的集成</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#React"><span class="toc-number">4.5.1.</span> <span class="toc-text">React</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Vue"><span class="toc-number">4.5.2.</span> <span class="toc-text">Vue</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SourceMap"><span class="toc-number">4.6.</span> <span class="toc-text">SourceMap</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#两种模式"><span class="toc-number">4.6.1.</span> <span class="toc-text">两种模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#模式一的配置步骤"><span class="toc-number">4.6.2.</span> <span class="toc-text">模式一的配置步骤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#注意事项"><span class="toc-number">4.6.3.</span> <span class="toc-text">注意事项</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他常用功能"><span class="toc-number">5.</span> <span class="toc-text">其他常用功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考资料"><span class="toc-number">6.</span> <span class="toc-text">参考资料</span></a></li></ol>
+		
+		</div>
+		
+		<p>前端中开发难免遇到一些测试阶段没有覆盖到的错误和问题，这些问题一旦发生在用户端，问题的沟通和定位成本就会很高，所以我们需要一个能够自动监控错误并且上报详细信息的平台，<a href="https://sentry.io/welcome/" target="_blank" rel="noopener">Sentry</a>就是提供这样一个服务的产品。本文主要介绍前端项目中如何集成Sentry来完成错误的监控。</p>
+<a id="more"></a>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><blockquote>
+<p>Sentry is an Open-source error tracking that helps you monitor and fix crashes in real time. Here we cover everything about the product and the platform integrations and our on-prem offering.</p>
+</blockquote>
+<p>Sentry是一款能够帮助你实时监控并且解决错误的开源产品，它基本覆盖了所有的技术栈以及使用场景。虽然它是一款开源产品，但是它的开发者也提供收费的直接接入服务，同时我们也可以选择自行搭建免费的服务，这就需要硬件方面的投入。</p>
+<p>Sentry的搭建过程这里不详细介绍，这方面的文章不少，而且官方提供的安装文档也比较直观，这个不是本文主要介绍的内容。</p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><ul>
+<li>Organization(组织)：Sentry项目中用于管理的最大单位，比如某某产品的技术组</li>
+<li>Teams(团队)：从属于组织，一个组织下可以有多个团队，比如前端团队</li>
+<li>Members(成员)：团队的成员，以邮箱账户为单位，成员的可以加入多个团队，</li>
+<li>Projects(项目)：错误信息所归属的最小单位，一个团队下的成员拥有该团队下所有项目的查看权限</li>
+</ul>
+<blockquote>
+<p>Projects allow you to scope events to a specific application in your organization. For example, you might have separate projects for your API server and frontend client.</p>
+</blockquote>
+<blockquote>
+<p>项目，使得你能在组织中将不同的事件分别管理，比如：你可以将服务端和前端项目所收集的事件区分开来。</p>
+</blockquote>
+<h2 id="角色"><a href="#角色" class="headerlink" title="角色"></a>角色</h2><p>成员除了能够查看所加入的团队下的项目，是否具有项目的其他权限则取决于用户的角色，Sentry平台下有以下几个角色</p>
+<ul>
+<li>Owner 组织的所有者</li>
+<li>Manager 组织的管理员</li>
+<li>Admin 高级用户</li>
+<li>Member 普通用户</li>
+</ul>
+<p>他们的具体区别见下表：<br><img src="https://easyread.nosdn.127.net/web/trunk/1544580858346/wx20181212-101349.png" alt="角色权限列表"><br>其中还有个<code>Billing</code>，这个是账单相关的一个角色，应该是类似财务一类的工作者。<br><strong>要点</strong>：</p>
+<ul>
+<li>如果<code>Manager</code>以上的成员将组织的<code>Open Membership</code>开关打开，成员就可以自行选择加入或退出组织下的团队，否则需要邀请或者管理员以上申请通过才可加入</li>
+<li><code>Admin</code>以上角色的成员只要他本人加入了某个团队，他就具有删除这个团队和团队下所有项目的权限</li>
+<li>团队被删除时，该团队下的所有项目也将一起被删除</li>
+<li>一旦<code>Open Membership</code>开关打开，任意成员就可以随意加入任何团队，而一旦这个成员是<code>Admin</code>或更高的角色，这就意味着<strong>他可以随意删除组织下的任何团队和项目，这是非常不安全的</strong>。</li>
+</ul>
+<p>所以，建议Sentry的管理者将<code>Open Membership</code>开关关闭，保证平台的稳定性。</p>
+<h2 id="接入"><a href="#接入" class="headerlink" title="接入"></a>接入</h2><h3 id="新建项目"><a href="#新建项目" class="headerlink" title="新建项目"></a>新建项目</h3><p>Sentry作为一款开源错误及事件监控平台，所支持的语言和框架非常全面，我们可以在新建项目时进行选择，以下是列举的一下较为流行的语言或者框架：<br><img src="https://easyread.nosdn.127.net/web/trunk/1544582289481/wx20181211-095810.png" alt="语言框架选择"><br>我们这里主要介绍前端的接入方式，所以我们选择<code>JavaScript</code>。</p>
+<h3 id="接入SDK"><a href="#接入SDK" class="headerlink" title="接入SDK"></a>接入SDK</h3><p>项目一旦创建完成，Sentry平台会直接在项目的看板上指引你如何进行对应语言的接入。</p>
+<blockquote>
+<p>这里需要说明的是，由于我们产品使用的是本地部署的Sentry，可能是附带部署的本地说明文档版本不够新，本地新建的Javascript项目显示的接入指引<strong>并不是最新的接入SDK</strong>，它建议的是引入<code>raven-js</code>，而官方的SDK已经升级为<code>@sentry/browser</code>，原SDK只进行bug修复方面的维护，所有新的特性都开发在新SDK上，所以接入方式还是建议去<a href="https://docs.sentry.io/error-reporting/quickstart/?platform=browsernpm" target="_blank" rel="noopener">Sentry官网文档</a>进行查询最新的文档。</p>
+</blockquote>
+<h3 id="SDK默认集成的功能"><a href="#SDK默认集成的功能" class="headerlink" title="SDK默认集成的功能"></a>SDK默认集成的功能</h3><p>Sentry默认配置下集成了以下功能来实现完备的事件捕获及上报能力,<a href="https://docs.sentry.io/platforms/javascript/default-integrations/" target="_blank" rel="noopener">默认集成</a>功能介绍如下：</p>
+<ul>
+<li>Dedupe 自动过滤一些重复的事件</li>
+<li>FunctionToString 使SDK能够上报详细的错误函数信息</li>
+<li>InboundFilters 便于开发者自行过滤或筛选所需的上报事件</li>
+<li><p>浏览器端特有的集成功能：</p>
+<ul>
+<li><p>Breadcrumbs 面包屑 包含以下选项，默认全部集成：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  beacon: boolean;  // 记录使用Beacon API完成的HTTP请求</span><br><span class="line">  console: boolean; // 捕捉console信息</span><br><span class="line">  dom: boolean;     // 捕捉所有点击以及键盘事件</span><br><span class="line">  fetch: boolean;   // 记录使用Fetch API完成的HTTP请求</span><br><span class="line">  history: boolean; // 记录history的变化</span><br><span class="line">  sentry: boolean;  // 记录主动上报的事件</span><br><span class="line">  xhr: boolean;     // 记录使用XMLHttpRequest API完成的HTTP请求</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>GlobalHandlers 全局设置是否需要对所有未捕获错误或未处理的失败响应进行处理</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  onerror: boolean;</span><br><span class="line">  onunhandledrejection: boolean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>LinkedErrors 递归查询错误堆栈的最深层次数和查询字段</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  key: string;</span><br><span class="line">  limit: number;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ReportingObserver 设置Sentry介入特定类型的<a href="https://developers.google.com/web/updates/2018/09/reportingapi" target="_blank" rel="noopener">ReportingObserver API</a>并将特定类型的事件上报到Sentry，以下三类默认都包含。</p>
+</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  types: &lt;'crash'|'deprecation'|'intervention'&gt;[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>TryCatch 这个默认集成功能使用<code>try/catch</code>语句来包裹原生的定时及事件相关API来捕获这些可能的异步错误（<code>setTimeout, setInterval, requestAnimationFrame, addEventListener/removeEventListener</code>）</li>
+<li>UserAgent 这个功能为上报的信息附加了浏览器的<code>user-agent</code>，帮助我们更好的了解和区分该用户的使用环境</li>
+</ul>
+</li>
+</ul>
+<p>一般不建议修改或删除这些集成，除非是有特别的需求或者冲突，修改方式为：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> Sentry <span class="keyword">from</span> <span class="string">'@sentry/browser'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//删除某集成</span></span><br><span class="line">Sentry.init(&#123;</span><br><span class="line">  dsn: <span class="string">'https://&lt;key&gt;@sentry.io/&lt;project&gt;'</span>,</span><br><span class="line">  integrations: <span class="function"><span class="params">integrations</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//删除Breadcrumbs集成</span></span><br><span class="line">    <span class="keyword">return</span> integrations.filter(<span class="function"><span class="params">integration</span> =&gt;</span> integration.name !== <span class="string">'Breadcrumbs'</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">//修改某集成</span></span><br><span class="line">Sentry.init(&#123;</span><br><span class="line">  dsn: <span class="string">'https://&lt;key&gt;@sentry.io/&lt;project&gt;'</span>,</span><br><span class="line">  integrations: <span class="function"><span class="params">integrations</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//关闭Breadcrumbs集成自动收集console的功能</span></span><br><span class="line">    <span class="keyword">return</span> [...integrations, <span class="keyword">new</span> Sentry.Integrations.Breadcrumbs(&#123; <span class="attr">console</span>: <span class="literal">false</span> &#125;)];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<h3 id="通用可选集成"><a href="#通用可选集成" class="headerlink" title="通用可选集成"></a>通用可选集成</h3><p>Sentry提供了一些多平台通用的可选集成功能，也能帮助我们完成一些特殊的工作：</p>
+<ul>
+<li><p>Debug 该集成帮助方便的查看事件发送到Sentry服务器之前的实时信息，可选设置项:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  debugger: boolean; // 在事件发送前触发开发者工具debugger模式(如果打开了开发者工具)</span><br><span class="line">  stringify: boolean; // 在事件发送前将事件序列化后通过console.log输出</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>RewriteFrames 该集成允许你对错误堆栈跟踪的每个帧进行处理:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  root: string; //root指定的路径将被拼接到当前错误帧的basename之前（文件的完整路径被分解为[root, dir, basename, ext]）</span><br><span class="line">  iteratee: (frame) =&gt; frame); //该函数接收frame作为参数处理后再返回</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="特定框架的集成"><a href="#特定框架的集成" class="headerlink" title="特定框架的集成"></a>特定框架的集成</h3><p>一般情况下，我们只需要在页面加载完后初始化Sentry SDk并使用默认配置即可，<code>@sentry/browser</code>组件会自动上报所有未经手动捕获的错误，但是对于现在的各大前端框架，光凭原始的错误堆栈信息想要看懂具体的错误信息不是那么容易的，所以我们还需要为不同的框架添加特定的集成，以<code>React</code>和<code>Vue</code>为例：</p>
+<h4 id="React"><a href="#React" class="headerlink" title="React"></a>React</h4><ul>
+<li><p>入口文件 entry.js （最好在render React app之前注册）</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Sentry.init(&#123;</span><br><span class="line"> dsn: <span class="string">"https://&lt;key&gt;@sentry.io/&lt;project&gt;"</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>React组件 ComponentA.js（与React 16以上的<code>Error Boundaries</code>API配合）</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExampleBoundary</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">    <span class="keyword">constructor</span>(props) &#123;</span><br><span class="line">        <span class="keyword">super</span>(props);</span><br><span class="line">        <span class="keyword">this</span>.state = &#123; <span class="attr">error</span>: <span class="literal">null</span> &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    componentDidCatch(error, errorInfo) &#123;</span><br><span class="line">      <span class="keyword">this</span>.setState(&#123; error &#125;);</span><br><span class="line">      Sentry.withScope(<span class="function"><span class="params">scope</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="built_in">Object</span>.keys(errorInfo).forEach(<span class="function"><span class="params">key</span> =&gt;</span> &#123;</span><br><span class="line">          scope.setExtra(key, errorInfo[key]);</span><br><span class="line">        &#125;);</span><br><span class="line">        Sentry.captureException(error);</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    render() &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.state.error) &#123;</span><br><span class="line">            <span class="comment">//render fallback UI</span></span><br><span class="line">            <span class="keyword">return</span> (</span><br><span class="line">              &lt;a onClick=&#123;() =&gt; Sentry.showReportDialog()&#125;&gt;Report feedback&lt;<span class="regexp">/a&gt;</span></span><br><span class="line"><span class="regexp">            );</span></span><br><span class="line"><span class="regexp">        &#125; else &#123;</span></span><br><span class="line"><span class="regexp">            /</span><span class="regexp">/when there's not an error, render children untouched</span></span><br><span class="line"><span class="regexp">            return this.props.children;</span></span><br><span class="line"><span class="regexp">        &#125;</span></span><br><span class="line"><span class="regexp">    &#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="Vue"><a href="#Vue" class="headerlink" title="Vue"></a>Vue</h4><p>针对Vue的集成将会通过Vue提供的<code>config.errorHandler</code>钩子获取到错误所处组件的<code>name</code>和<code>props</code>，帮助我们更好的定位错误：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">import * as Sentry from &apos;@sentry/browser&apos;</span><br><span class="line"></span><br><span class="line">Sentry.init(&#123;</span><br><span class="line">  dsn: &apos;https://&lt;key&gt;@sentry.io/&lt;project&gt;&apos;,</span><br><span class="line">  integrations: [new Sentry.Integrations.Vue(&#123; Vue &#125;)]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<h3 id="SourceMap"><a href="#SourceMap" class="headerlink" title="SourceMap"></a>SourceMap</h3><p>现在的开发当中代码压缩基本是常态，有了SourceMap的支持以后错误的定位将会清晰许多。而Sentry的SourceMap功能虽然很完善，文档也很丰富，但是稍显混乱。这里主要就<code>webpack</code>打包工具的接入流程进行介绍，并且介绍的是适用度较高的做法，因为能实现目的其他方式也有不少，这里不做一一介绍。</p>
+<h4 id="两种模式"><a href="#两种模式" class="headerlink" title="两种模式"></a>两种模式</h4><ul>
+<li>我们最理想的SourceMap工作模式应该是<strong>用户端无法访问，而Sentry看板错误报告中却能自动识别并解析</strong>，这就需要我们将SourceMap和源文件上传的Sentry服务器，并且通过<code>.gitignore</code>或者部署脚本来阻止SourceMap文件随着源文件一同部署。</li>
+<li>如果不需要这种模式，可以不用以下配置，只需要使用默认的webpack <code>devtool</code>配置，并保证源文件和SourceMap都可以被用户访问到即可（此时用户可以通过开发者工作看到我们未经压缩的代码），Sentry服务器会自动分析出错代码的SourceMap指令并尝试进行解析。</li>
+</ul>
+<h4 id="模式一的配置步骤"><a href="#模式一的配置步骤" class="headerlink" title="模式一的配置步骤"></a>模式一的配置步骤</h4><ol>
+<li>新建组织和项目<br>假设组是和项目已经新建完成，那么此时肯定已经有了Sentry的访问地址，可以是官方提供的收费服务地址<code>sentry.io</code>，也可以是本地自行部署的Sentry服务地址<code>https://myserver.invalid/</code>(官方文档中叫做<code>on-premise</code>方式)。</li>
+<li>获取组织和项目的<code>slug</code><br>有了组织和项目，我们还需要知道他们在该Sentry服务器中的<code>slug</code>，一般就等于我们新建组织和项目时的命名。<ul>
+<li>查询组织的<code>slug</code>可以访问<code>https://myserver.invalid/api/0/organizations/</code></li>
+<li>查询项目的<code>slug</code>可以访问<code>https://myserver.invalid/api/0/organizations/{organization_slug}/projects/</code></li>
+</ul>
+</li>
+<li>安装<code>sentry-cli</code><br>这部分官方文档写的比较清楚，可以参考<a href="https://docs.sentry.io/cli/installation/" target="_blank" rel="noopener">官方文档</a>。</li>
+<li><p>配置<code>sentry-cli</code><br>我们在需要<code>webpack</code>打包的文件目录或者更高级的目录（推荐在工程的根目录，因为sentry-cli默认会向上寻找）添加名为<code>.sentryclirc</code>的配置文件，如果使用的是本地部署的Sentry服务器，也就是<code>on-premise</code>方式，我们需要在该文件中首先填入以下配置，其中就包括我们刚才查询到的<code>slug</code>（这两行配置不影响下面的授权，只是在webpack打包自动上传SourceMap时需要指定）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[defaults]</span><br><span class="line">url=https://myserver.invalid/</span><br><span class="line">org=&#123;organization_slug&#125;</span><br><span class="line">project=&#123;project_slug&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>授权<code>sentry-cli</code></p>
+<ol>
+<li>如果是首次配置，我们在需要<code>webpack</code>打包的文件目录下运行<code>sentry-cli login</code>命令进行授权，命令行将会指引我们打开浏览器新建一个<code>authentication token</code>（不同于新建项目以后自动生成的那个<code>Security Token</code>）；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545124990651/login.png" alt="open-browser"></li>
+<li>按照指示唤起浏览器后，点击新建一个<code>token</code>；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545125157110/createtoken.png" alt="create-token"></li>
+<li>新建<code>token</code>时需要选择该<code>token</code>有效的作用域，也就是该<code>token</code>的权限，如果需要在<code>webpack</code>打包过程中自动上传SourceMap到Sentry服务器并解析，我们至少需要勾选<code>project:read</code>和<code>project:releases</code>；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545125268749/tokenscopes.png" alt="token-scope"></li>
+<li><code>token</code>新建完成；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545125391771/token.png" alt="token"></li>
+<li>将获得的<code>token</code>填入之前<code>sentry-cli login</code>命令打开的终端中；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545199800802/token-saved.png" alt="token-saved"></li>
+<li>此时能看到<code>sentry-cli</code>自动将我们填入的<code>token</code>写入了我们新建的<code>.sentryclirc</code>配置文件中，这个新建的token是对应于整个Sentry服务器的，并不是只对应于某一个项目，之后如果还想要查看，可以通过访问<code>https://myserver.invalid/api/</code>来查看。</li>
+</ol>
+</li>
+<li><p>指定<code>release</code><br>这一步相当重要，如果<strong>事件上报所属的release</strong>和<strong>上传的SourceMap文件所属的release</strong>不匹配，Sentry平台是无法将他们关联起来的，<code>release</code>的值可以是一个活动的代号，也可以是一次迭代的版本号，还可以随着每次构建依次递增，在每个项目中最好具有一定的唯一性，而且不能含有一些特殊字符比如<code>/</code>，这会在下面的上传过程中报错。</p>
+ <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> Sentry <span class="keyword">from</span> <span class="string">'@sentry/browser'</span></span><br><span class="line"></span><br><span class="line">Sentry.init(&#123;</span><br><span class="line">  release: <span class="string">'activity20181212'</span>,</span><br><span class="line">  dsn: <span class="string">'https://&lt;key&gt;@sentry.io/&lt;project&gt;'</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>引入<code>Sentry Webpack Plugin</code>插件<br>我们现在只需要安装并在<code>webpack</code>配置中引入<code>Sentry Webpack Plugin</code>插件，就可以实现在<code>webpack</code>打包过程中自动识别源文件和SourceMap文件并自动上传。</p>
+ <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> SentryCliPlugin = <span class="built_in">require</span>(<span class="string">'@sentry/webpack-plugin'</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> config = &#123;</span><br><span class="line">  plugins: [</span><br><span class="line">    <span class="keyword">new</span> SentryCliPlugin(&#123;</span><br><span class="line">      release: <span class="string">'activity20181212'</span>, <span class="comment">//可选，但是如果想要实现sourcemap自动解析必须指定</span></span><br><span class="line">      include: <span class="string">'dist'</span>, <span class="comment">//必须，array or string，指定sentry-cli扫描的文件夹，它会将js和匹配的map文件上传</span></span><br><span class="line">      urlPrefix: <span class="string">`~/static/activity/20181212/dist/`</span>, <span class="comment">//可选，重要！！！上传到Sentry的SourceMap及源文件的名称，用于解析时的匹配</span></span><br><span class="line">      ignoreFile: <span class="string">'.sentrycliignore'</span>, <span class="comment">//可选，string, 扫描时所忽略的文件的配置文件所在位置,格式和.gitignore一样</span></span><br><span class="line">      ignore: [<span class="string">'node_modules'</span>, <span class="string">'webpack.config.js'</span>], <span class="comment">//可选，string or array，优先级高于ignoreFile，如果两个都不指定，默认为['node_modules']</span></span><br><span class="line">      configFile: <span class="string">'sentry.properties'</span>, <span class="comment">//可选，string，sentry-cli的配置文件位置，</span></span><br><span class="line">    &#125;),</span><br><span class="line">  ],</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p> 插件的其他可配置参数可以参见其<a href="https://github.com/getsentry/sentry-webpack-plugin" target="_blank" rel="noopener">GitHub说明</a>，上传完成的源文件和SourceMap可以在项目看板的<code>Releases/Artifacts</code>tab下查询并管理。</p>
+<h4 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h4></li>
+</ol>
+<ul>
+<li>模式一工作的前提是必须指定<code>Sentry Webpack Plugin</code>以及<code>@sentry/browser SDk</code>的release，且他们必须一致</li>
+<li><code>Sentry Webpack Plugin</code>的<code>urlPrefix</code>选项必须正确配置。如果页面URL为<code>https://www.test.com/activity20181212/dist/index.html</code>，报错对应的Javascript为<code>https://www.test.com/activity20181212/dist/js/app.ceabe866.js</code>，那么<code>urlPrefix</code>必须设置为<code>~/activity20181212/dist/</code>，其中<code>~</code>代表页面的协议加域名，即<code>https://www.test.com</code>，或者设置为<code>urlPrefix: &#39;https://www.test.com/activity20181212/dist/&#39;</code>这种绝对路径，因为Sentry服务器SourceMap解析的原理就是读取出错的Javascript文件末尾的SourceMap指令，得到SourceMap文件路径，再与对应<code>Releases</code>下的<code>Artifacts</code>进行匹配，从而进行解析。比如下图中上面4个<code>Artifacts</code>为正确有效的，下面4个为错误的。<br><img src="https://easyread.nosdn.127.net/web/trunk/1545218437248/artifactscompare.png" alt="artifactsCompare"><br>- 如果配置的SourceMap解析失败，可以查看官方的<a href="https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting/" target="_blank" rel="noopener">troubleshooting</a></li>
+</ul>
+<h2 id="其他常用功能"><a href="#其他常用功能" class="headerlink" title="其他常用功能"></a>其他常用功能</h2><p>此处列举一下可能比较常用的Sentry功能，官方文档写的比较清楚，就直接列举出来了：</p>
+<ul>
+<li><a href="https://docs.sentry.io/error-reporting/configuration/?platform=browser" target="_blank" rel="noopener">初始化SDK时可以调整的参数</a></li>
+<li><a href="https://docs.sentry.io/error-reporting/capturing/?platform=browser" target="_blank" rel="noopener">手动上报错误或消息</a></li>
+<li><a href="https://docs.sentry.io/enriching-error-data/context/?platform=browser#capturing-the-user" target="_blank" rel="noopener">为上报数据添加用户用户信息</a></li>
+<li><a href="https://docs.sentry.io/enriching-error-data/breadcrumbs/?platform=browser#recording-crumbs" target="_blank" rel="noopener">手动上报面包屑</a></li>
+</ul>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a href="https://w3c.github.io/reporting/" target="_blank" rel="noopener">https://w3c.github.io/reporting/</a></li>
+<li><a href="http://getsentry.github.io/sentry-javascript/index.html" target="_blank" rel="noopener">Sentry JavaScript SDKs源码文档</a></li>
+<li><a href="https://forum.sentry.io/" target="_blank" rel="noopener">Sentry 官方论坛</a></li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/前端/">前端</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/sentry/">sentry</a><a href="/tags/javascript/">javascript</a><a href="/tags/error/">error</a>
+  </div>
+
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://icewind-blog.com/2018/12/11/integrate-sentry-with-javascript/" data-title="如何使用Sentry监控前端错误 | Icewind Blog" data-tsina="2099631680" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2018/11/26/experience-of-miniprogramm/" title="小程序开发中的一些经验">
+ <strong>下一篇：</strong><br> 
+ <span>小程序开发中的一些经验
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#概念"><span class="toc-number">2.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#角色"><span class="toc-number">3.</span> <span class="toc-text">角色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#接入"><span class="toc-number">4.</span> <span class="toc-text">接入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#新建项目"><span class="toc-number">4.1.</span> <span class="toc-text">新建项目</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#接入SDK"><span class="toc-number">4.2.</span> <span class="toc-text">接入SDK</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SDK默认集成的功能"><span class="toc-number">4.3.</span> <span class="toc-text">SDK默认集成的功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#通用可选集成"><span class="toc-number">4.4.</span> <span class="toc-text">通用可选集成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#特定框架的集成"><span class="toc-number">4.5.</span> <span class="toc-text">特定框架的集成</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#React"><span class="toc-number">4.5.1.</span> <span class="toc-text">React</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Vue"><span class="toc-number">4.5.2.</span> <span class="toc-text">Vue</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SourceMap"><span class="toc-number">4.6.</span> <span class="toc-text">SourceMap</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#两种模式"><span class="toc-number">4.6.1.</span> <span class="toc-text">两种模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#模式一的配置步骤"><span class="toc-number">4.6.2.</span> <span class="toc-text">模式一的配置步骤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#注意事项"><span class="toc-number">4.6.3.</span> <span class="toc-text">注意事项</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他常用功能"><span class="toc-number">5.</span> <span class="toc-text">其他常用功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考资料"><span class="toc-number">6.</span> <span class="toc-text">参考资料</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/Node/" title="Node">Node<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端/" title="前端">前端<sup>24</sup></a></li>
+		
+			<li><a href="/categories/博客/" title="博客">博客<sup>2</sup></a></li>
+		
+			<li><a href="/categories/数码/" title="数码">数码<sup>1</sup></a></li>
+		
+			<li><a href="/categories/随笔/" title="随笔">随笔<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/AJAX/" title="AJAX">AJAX<sup>1</sup></a></li>
+		
+			<li><a href="/tags/CSS/" title="CSS">CSS<sup>9</sup></a></li>
+		
+			<li><a href="/tags/CSS3/" title="CSS3">CSS3<sup>1</sup></a></li>
+		
+			<li><a href="/tags/HTML/" title="HTML">HTML<sup>9</sup></a></li>
+		
+			<li><a href="/tags/HTML5/" title="HTML5">HTML5<sup>2</sup></a></li>
+		
+			<li><a href="/tags/IOS/" title="IOS">IOS<sup>1</sup></a></li>
+		
+			<li><a href="/tags/JSONP/" title="JSONP">JSONP<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Javascript/" title="Javascript">Javascript<sup>12</sup></a></li>
+		
+			<li><a href="/tags/Javscript/" title="Javscript">Javscript<sup>2</sup></a></li>
+		
+			<li><a href="/tags/Node/" title="Node">Node<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Rich-text-editor/" title="Rich text editor">Rich text editor<sup>1</sup></a></li>
+		
+			<li><a href="/tags/URL/" title="URL">URL<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Vue/" title="Vue">Vue<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Webpack/" title="Webpack">Webpack<sup>1</sup></a></li>
+		
+			<li><a href="/tags/browser/" title="browser">browser<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>1</sup></a></li>
+		
+			<li><a href="/tags/config/" title="config">config<sup>1</sup></a></li>
+		
+			<li><a href="/tags/error/" title="error">error<sup>1</sup></a></li>
+		
+			<li><a href="/tags/hexo/" title="hexo">hexo<sup>3</sup></a></li>
+		
+			<li><a href="/tags/iWeb/" title="iWeb">iWeb<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+      <li><a href="http://bbs.byr.cn/" target="_blank" title="BYR">北邮人论坛</a></li>
+      <li><a href="http://yangjian.me" target="_blank" title="YangJian">Alimon's Blog</a></li>
+      <li><a href="http://zipperary.com/" target="_blank" title="zippera">Zippera's Blog</a></li>
+      <li><a href="http://wuchong.me/" target="_blank" title="WuChong">Jark's Blog</a></li>
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		
+		<a href="http://weibo.com/2099631680" target="_blank"><div class="author"></div></a>
+		
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m Icewind. For now I&#39;m a developer of FE in Hangzhou. <br>
+			I&#39;ll share my learning experience with you at this blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/2099631680" target="_blank" class="icon-weibo" title="weibo"></a>
+		
+		
+		<a href="https://github.com/icewind7030" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:liushichuan@163.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://zespia.tw/hexo/" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Pacman">Jacman</a> © 2018 
+		
+		<a href="http://icewind-blog.com/about" target="_blank" title="Icewind">Icewind</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+    c.click(function(){
+      ta.css('display', 'block').addClass('fadeIn');
+    });
+    o.click(function(){
+      ta.css('display', 'none');
+    });
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,320-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox({
+      type: 'image'
+    });
+  }
+}); 
+</script>
+
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-51186401-1', 'icewind-blog.com');  
+ga('send', 'pageview');
+</script>
+
+
+<div id="totop">
+<a title="返回顶部"><img src="/img/scrollup.png"></a>
+</div>
+
+<script src="/js/totop.js"></script>
+
+<script type="text/x-mathjax-config"> 
+MathJax.Hub.Config({ 
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} 
+}); 
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+  </body>
+</html>
