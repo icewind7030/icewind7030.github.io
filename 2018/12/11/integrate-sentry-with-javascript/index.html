@@ -175,10 +175,10 @@
 <h3 id="SourceMap"><a href="#SourceMap" class="headerlink" title="SourceMap"></a>SourceMap</h3><p>现在的开发当中代码压缩基本是常态，有了SourceMap的支持以后错误的定位将会清晰许多。而Sentry的SourceMap功能虽然很完善，文档也很丰富，但是稍显混乱。这里主要就<code>webpack</code>打包工具的接入流程进行介绍，并且介绍的是适用度较高的做法，因为能实现目的其他方式也有不少，这里不做一一介绍。</p>
 <h4 id="两种模式"><a href="#两种模式" class="headerlink" title="两种模式"></a>两种模式</h4><ul>
 <li>我们最理想的SourceMap工作模式应该是<strong>用户端无法访问，而Sentry看板错误报告中却能自动识别并解析</strong>，这就需要我们将SourceMap和源文件上传的Sentry服务器，并且通过<code>.gitignore</code>或者部署脚本来阻止SourceMap文件随着源文件一同部署。</li>
-<li>如果不需要这种模式，可以不用以下配置，只需要使用默认的webpack <code>devtool</code>配置，并保证源文件和SourceMap都可以被用户访问到即可（此时用户可以通过开发者工作看到我们未经压缩的代码），Sentry服务器会自动分析出错代码的SourceMap指令并尝试进行解析。</li>
+<li>如果不需要这种模式，可以不用以下配置，只需要使用默认的webpack <code>devtool</code>配置，并保证源文件和SourceMap都可以被用户访问到即可（此时用户可以通过开发者工具看到我们未经压缩的代码），Sentry服务器会自动分析出错代码的SourceMap指令并尝试进行解析。</li>
 </ul>
 <h4 id="模式一的配置步骤"><a href="#模式一的配置步骤" class="headerlink" title="模式一的配置步骤"></a>模式一的配置步骤</h4><ol>
-<li>新建组织和项目<br>假设组是和项目已经新建完成，那么此时肯定已经有了Sentry的访问地址，可以是官方提供的收费服务地址<code>sentry.io</code>，也可以是本地自行部署的Sentry服务地址<code>https://myserver.invalid/</code>(官方文档中叫做<code>on-premise</code>方式)。</li>
+<li>新建组织和项目<br>假设组是和项目已经新建完成，那么此时肯定已经有了Sentry的访问地址，可以是官方提供的收费服务地址<code>sentry.io</code>，也可以是本地自行部署的Sentry服务地址<code>https://myserver.invalid/</code>(官方文档中叫做<code>on-premise</code>方式，<strong>这里的<code>myserver.invalid</code>并不是一个真正可用的地址，而是需要替换成实际的服务地址</strong>)。</li>
 <li>获取组织和项目的<code>slug</code><br>有了组织和项目，我们还需要知道他们在该Sentry服务器中的<code>slug</code>，一般就等于我们新建组织和项目时的命名。<ul>
 <li>查询组织的<code>slug</code>可以访问<code>https://myserver.invalid/api/0/organizations/</code></li>
 <li>查询项目的<code>slug</code>可以访问<code>https://myserver.invalid/api/0/organizations/{organization_slug}/projects/</code></li>
@@ -251,6 +251,14 @@
 	
 <nav class="article-nav clearfix">
  
+ <div class="prev">
+ <a href="/2019/04/15/things-about-static-assets-repository/" title="搭建静态资源工程的一些经验">
+  <strong>上一篇：</strong><br>
+  <span>
+  搭建静态资源工程的一些经验</span>
+</a>
+</div>
+
 
 <div class="next">
 <a href="/2018/11/26/experience-of-miniprogramm/" title="小程序开发中的一些经验">
@@ -284,7 +292,7 @@
 		
 			<li><a href="/categories/Node/" title="Node">Node<sup>1</sup></a></li>
 		
-			<li><a href="/categories/前端/" title="前端">前端<sup>24</sup></a></li>
+			<li><a href="/categories/前端/" title="前端">前端<sup>25</sup></a></li>
 		
 			<li><a href="/categories/博客/" title="博客">博客<sup>2</sup></a></li>
 		
@@ -393,7 +401,7 @@
 		<a href="mailto:liushichuan@163.com" target="_blank" class="icon-email" title="Email Me"></a>
 		
 	</div>
-		<p class="copyright">Powered by <a href="http://zespia.tw/hexo/" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Pacman">Jacman</a> © 2018 
+		<p class="copyright">Powered by <a href="http://zespia.tw/hexo/" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Pacman">Jacman</a> © 2019 
 		
 		<a href="http://icewind-blog.com/about" target="_blank" title="Icewind">Icewind</a>
 		
@@ -557,7 +565,7 @@ MathJax.Hub.Config({
   tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} 
 }); 
 </script>
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
   </body>
 </html>
