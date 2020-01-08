@@ -1,0 +1,611 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>Node.js实践经验总结 | Icewind Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Icewind">
+    
+    <meta name="description" content="本文主要分享了在搭建蜗牛读书Node.js截图服务中学习和总结的相关技术栈，以及调试和监控Node.js应用的知识和技巧。">
+    
+    
+    
+    
+    <link rel="alternative" href="/atom.xml" title="Icewind Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/l_favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/l_retina.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/l_retina.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/l_rec.png" alt="Icewind Blog" title="Icewind Blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Icewind Blog">Icewind Blog</a></h1>
+				<h2 class="blog-motto">Share makes it a better world.</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="Search">
+					</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope="" itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/11/18/exprience-of-nodejs-development/" title="Node.js实践经验总结" itemprop="url">Node.js实践经验总结</a>
+  </h1>
+  <p class="article-author">By
+      <a href="http://icewind-blog.com/about" title="Icewind" target="_blank">Icewind</a>
+  </p><p class="article-time">
+    <time datetime="2019-11-18T02:51:35.000Z" itemprop="datePublished">发表于2019-11-18</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#意义"><span class="toc-number">1.</span> <span class="toc-text">意义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#为什么要搭建这么一套截图服务"><span class="toc-number">1.1.</span> <span class="toc-text">为什么要搭建这么一套截图服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#为什么选择使用Egg-js和Puppeteer"><span class="toc-number">1.2.</span> <span class="toc-text">为什么选择使用Egg.js和Puppeteer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Egg-js"><span class="toc-number">2.</span> <span class="toc-text">Egg.js</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#运行原理"><span class="toc-number">2.1.</span> <span class="toc-text">运行原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#目录结构"><span class="toc-number">2.2.</span> <span class="toc-text">目录结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#应用"><span class="toc-number">2.3.</span> <span class="toc-text">应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Puppeteer"><span class="toc-number">3.</span> <span class="toc-text">Puppeteer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#名词解释"><span class="toc-number">3.1.</span> <span class="toc-text">名词解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#截图API"><span class="toc-number">3.2.</span> <span class="toc-text">截图API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#截图性能优化"><span class="toc-number">3.3.</span> <span class="toc-text">截图性能优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Node-js实践经验"><span class="toc-number">4.</span> <span class="toc-text">Node.js实践经验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#如何解决物理构建机及服务器Node-js版本问题"><span class="toc-number">4.1.</span> <span class="toc-text">如何解决物理构建机及服务器Node.js版本问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#如何调试Node-js应用"><span class="toc-number">4.2.</span> <span class="toc-text">如何调试Node.js应用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Node-js调试协议"><span class="toc-number">4.2.1.</span> <span class="toc-text">Node.js调试协议</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#通过Chrome进行调试"><span class="toc-number">4.2.2.</span> <span class="toc-text">通过Chrome进行调试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#通过VS-Code进行调试"><span class="toc-number">4.2.3.</span> <span class="toc-text">通过VS Code进行调试</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#如何监控Node-js应用"><span class="toc-number">4.3.</span> <span class="toc-text">如何监控Node.js应用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Node-js性能监控平台-alinode"><span class="toc-number">4.3.1.</span> <span class="toc-text">Node.js性能监控平台(alinode)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AliNode-Runtime-及-agenthub"><span class="toc-number">4.3.2.</span> <span class="toc-text">AliNode Runtime 及 agenthub</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#egg-alinode"><span class="toc-number">4.3.3.</span> <span class="toc-text">egg-alinode</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用方法"><span class="toc-number">4.3.4.</span> <span class="toc-text">使用方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实践中遇到的问题及解决办法"><span class="toc-number">5.</span> <span class="toc-text">实践中遇到的问题及解决办法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<p>本文主要分享了在搭建蜗牛读书<code>Node.js</code>截图服务中学习和总结的相关技术栈，以及调试和监控<code>Node.js</code>应用的知识和技巧。</p>
+<a id="more"></a>
+<p>前段时间搭建了一套根据HTML生成图片的<code>Node.js</code>服务，主要是基于<code>Egg.js</code>框架和<code>Puppeteer</code>库。</p>
+<h2 id="意义"><a href="#意义" class="headerlink" title="意义"></a>意义</h2><h3 id="为什么要搭建这么一套截图服务"><a href="#为什么要搭建这么一套截图服务" class="headerlink" title="为什么要搭建这么一套截图服务"></a>为什么要搭建这么一套截图服务</h3><p>我们在开发当中经常遇到一些业务场景，需要我们<strong>根据动态内容生成图片</strong>，用于保存或者分享。以前业务当中不是没有这个服务，但是调用的是Java服务端提供的一个比较老旧的服务，<strong>对于前端技术的支持不好</strong>：比如布局经常出现错乱，更不用说<code>CSS3</code>的新特性了，在开发阶段需要耗费很多无谓的调试时间。</p>
+<p>所以，为了实现这么一套服务，结合前端开发所熟悉的技术栈，就有了搭建一套基于<code>Node.js</code>的截图服务的想法。</p>
+<h3 id="为什么选择使用Egg-js和Puppeteer"><a href="#为什么选择使用Egg-js和Puppeteer" class="headerlink" title="为什么选择使用Egg.js和Puppeteer"></a>为什么选择使用<code>Egg.js</code>和<code>Puppeteer</code></h3><p>之所以选择<a href="https://eggjs.org/zh-cn/intro/index.html" target="_blank" rel="noopener">Egg.js</a>作为服务端框架，是经过一番调研和对比后，被<code>Egg.js</code>友好的文档、科学的插件机制、灵活的扩展能力和完善的基础功能和生态所打动。</p>
+<p>而选择<code>Puppeteer</code>作为截图服务的渲染引擎，也是看重其<strong>Google</strong>背景，它提供的是用<code>Node.js</code> API来控制<code>Chrome</code>或<code>Chromium</code>的能力，这意味通过<code>Puppeteer</code>能获得和<code>Chrome浏览器</code>基本相同的前端技术支持能力，从而解决之前<code>Java</code>截图服务的弊端。</p>
+<p>下面简要的介绍一下<code>Egg.js</code>和<code>Puppeteer</code>的特点和应用。</p>
+<blockquote>
+<p><code>Node.js</code>缩写为<code>Node</code>， <code>Egg.js</code>缩写为<code>Egg</code>，下文会使用缩写代指<code>Node.js</code>和<code>Egg.js</code>。</p>
+</blockquote>
+<h2 id="Egg-js"><a href="#Egg-js" class="headerlink" title="Egg.js"></a>Egg.js</h2><blockquote>
+<p>Egg.js 为企业级框架和应用而生，我们希望由 Egg.js 孕育出更多上层框架，帮助开发团队和开发人员降低开发和维护成本。</p>
+</blockquote>
+<p><code>Egg</code>继承于 <code>Koa</code>，而<code>Koa</code>的特点就在于其中间件设计采用的洋葱圈模型。</p>
+<p><img src="https://easyreadfs.nosdn.127.net/1574147643618/onion.png" alt="洋葱圈模型"></p>
+<p>这个设计模型的特点就在于所有的请求经过一个中间件的时候都会执行两次，这样非常实现不同的前置或者后置逻辑，这里不作详细解释，可以查看<a href="https://eggjs.org/zh-cn/intro/egg-and-koa.html" target="_blank" rel="noopener">Egg.js 与 Koa</a>。</p>
+<p>而我们之所以选择<code>Egg</code>主要还是看重其完善的底层支持和良好的扩展机制，便于未来<code>Node</code>服务的扩展和维护。</p>
+<h3 id="运行原理"><a href="#运行原理" class="headerlink" title="运行原理"></a>运行原理</h3><ul>
+<li><code>Egg</code>多进程模型<br><img src="https://easyreadfs.nosdn.127.net/1574147368769/egg-process.jpg" alt="Egg多进程模型"></li>
+</ul>
+<ul>
+<li><p><code>Egg</code>各进程时序图<br><img src="https://easyreadfs.nosdn.127.net/1574147417442/egg-life.jpg" alt="Egg时序图"></p>
+</li>
+<li><p>master 主进程</p>
+</li>
+<li>worker master 的子进程，数量一般等于服务器CPU核心数，主要用于对外服务，处理各种业务层面的事情</li>
+<li>agent master 的子进程，主要处理公共资源的访问，如文件监听，或者帮 worker 处理一些不需要再每个worker上都执行一遍的事务，比如日志分割等。</li>
+</ul>
+<h3 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">egg-project</span><br><span class="line">├── package.json</span><br><span class="line">├── app.js (可选)                       worker上想要自定义启动时的初始化工作</span><br><span class="line">├── agent.js (可选)                     agent上想要自定义启动时的初始化工作</span><br><span class="line">├── app</span><br><span class="line">|   ├── router.js                       路由控制</span><br><span class="line">│   ├── controller                      控制器，主要用于解析用户的输入</span><br><span class="line">│   |   └── home.js</span><br><span class="line">│   ├── service (可选)                   服务，主要用于编写业务逻辑层</span><br><span class="line">│   |   └── user.js</span><br><span class="line">│   ├── middleware (可选)                中间件</span><br><span class="line">│   |   └── response_time.js</span><br><span class="line">│   ├── schedule (可选)                  定时任务</span><br><span class="line">│   |   └── my_task.js</span><br><span class="line">│   ├── public (可选)                    静态资源</span><br><span class="line">│   |   └── reset.css</span><br><span class="line">│   ├── view (可选)                      用于放置模板文件</span><br><span class="line">│   |   └── home.tpl</span><br><span class="line">│   └── extend (可选)                    框架的扩展</span><br><span class="line">│       ├── helper.js (可选)</span><br><span class="line">│       ├── request.js (可选)</span><br><span class="line">│       ├── response.js (可选)</span><br><span class="line">│       ├── context.js (可选)</span><br><span class="line">│       ├── application.js (可选)</span><br><span class="line">│       └── agent.js (可选)</span><br><span class="line">├── config                              存放配置文件，根据运行环境会覆盖default配置</span><br><span class="line">|   ├── plugin.js</span><br><span class="line">|   ├── config.default.js</span><br><span class="line">│   ├── config.prod.js</span><br><span class="line">|   ├── config.test.js (可选)</span><br><span class="line">|   ├── config.local.js (可选)</span><br><span class="line">|   └── config.unittest.js (可选)</span><br><span class="line">└── test                                单元测试</span><br><span class="line">    ├── middleware</span><br><span class="line">    |   └── response_time.test.js</span><br><span class="line">    └── controller</span><br><span class="line">        └── home.test.js</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Egg 奉行『约定优于配置』，按照一套统一的约定进行应用开发。</p>
+</blockquote>
+<p>所以，我们只要按照上图中<code>Egg</code>约定的目录结构和配置方式进行开发，<code>Egg</code>会自行处理配置的覆盖和加载，插件的配置和加载以及各模块的分工合作等，这可以使我们更好的专注于业务开发当中。 </p>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>虽然这次的主要工作是开发基于<code>Node</code>的截图服务，但是得益于<code>Egg</code>的特性，集成<strong>SSR</strong>功能，接入<strong>redis</strong>，接入性能监控等应用扩展变的非常容易。</p>
+<ul>
+<li><strong>SSR</strong> <a href="https://github.com/alibaba/beidou/blob/master/README-ZH.md" target="_blank" rel="noopener">beidou</a>、<a href="https://www.yuque.com/easy-team/egg-vue" target="_blank" rel="noopener">easy-team/egg-vue</a>等，配置安装即可用</li>
+<li><strong>redis</strong> <a href="https://github.com/eggjs/egg-redis" target="_blank" rel="noopener">egg-redis</a>插件即插即用</li>
+<li><strong>性能监控</strong> <a href="https://github.com/eggjs/egg-alinode" target="_blank" rel="noopener">egg-alinode</a>插件对接到<strong>alinode Node.js性能监控平台</strong></li>
+<li>…</li>
+</ul>
+<h2 id="Puppeteer"><a href="#Puppeteer" class="headerlink" title="Puppeteer"></a>Puppeteer</h2><blockquote>
+<p>Puppeteer is a Node library which provides a high-level API to control Chrome or Chromium over the DevTools Protocol. Puppeteer runs headless by default, but can be configured to run full (non-headless) Chrome or Chromium.<br>Puppeteer是一个Node库，它提供了高级API来通过DevTools协议控制Chrome或Chromium。 Puppeteer默认情况下无头运行，但可以配置为运行完整（有界面）的Chrome或Chromium。</p>
+</blockquote>
+<p><code>Puppeteer</code>也不做过度说明了，应该多少也都用过或听说过，功能和实际使用Chrome其实没有太大的差别，下面主要介绍几个本服务中涉及到的概念:</p>
+<h3 id="名词解释"><a href="#名词解释" class="headerlink" title="名词解释"></a>名词解释</h3><ul>
+<li>Browser: <code>Puppeteer</code>根据设定的参数<code>launch</code>后返回的实例，等价于浏览器</li>
+<li>Page: <code>Puppeteer</code>通过<code>pages()</code>或者<code>newPage()</code>获取的对象，等价于浏览器的标签页</li>
+</ul>
+<h3 id="截图API"><a href="#截图API" class="headerlink" title="截图API"></a>截图API</h3><p><img src="https://easyreadfs.nosdn.127.net/1574156301197/screenshot.png" alt="截图API"><br>上图是<code>Page</code>对象提供的截图API，可以根据参数将当前页的部分或者全部内容生成<code>jpeg</code>或者<code>png</code>格式的图片。</p>
+<h3 id="截图性能优化"><a href="#截图性能优化" class="headerlink" title="截图性能优化"></a>截图性能优化</h3><ol>
+<li>经过测试，一个<code>Browser</code>同时只能处理一个截图任务，那么要想更快速的进行截图，势必需要启动多个<code>Browser</code>来进行服务。</li>
+<li>前面说到，使用<code>Puppeteer</code>基本就等价于一个浏览器在运行，而浏览器和标签页的启动都是非常耗时的，所以如果想要尽可能快的响应数据并且返回截图，最有效的方式就是预先启动好一批浏览器。</li>
+<li>浏览器的数量也不可能是无限的，那样对服务器的负担就太重了，所以就需要一套可靠的机制来维护<code>Browser</code>池。</li>
+<li><p>这里选择了<a href="https://www.npmjs.com/package/generic-pool" target="_blank" rel="noopener">generic-pool</a>来维护<code>Browser</code>池，在程序启动后就进行预热，准备好一定的实例，随着请求的扩大，增加实例的数量，并且控制每个实例最多被使用次数和回收前最长闲置时间等，尽可能增加服务能力的同时防止内存占用过多。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//puppeteer-pool.js</span></span><br><span class="line"><span class="keyword">const</span> puppeteer = <span class="built_in">require</span>(<span class="string">'puppeteer'</span>)</span><br><span class="line"><span class="keyword">const</span> genericPool = <span class="built_in">require</span>(<span class="string">'generic-pool'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 初始化一个 Puppeteer 池</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; [options=&#123;&#125;] 创建池的配置配置</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; [options.max=4] 最多产生多少个 puppeteer 实例 。如果你设置它，请确保 在引用关闭时调用清理池。 pool.drain().then(()=&gt;pool.clear())</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; [options.min=1] 保证池中最少有多少个实例存活</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; [options.maxUses=2048] 每一个 实例 最大可重用次数，超过后将重启实例。0表示不检验</span></span><br><span class="line"><span class="comment"> * @param &#123;Boolean&#125; [options.testOnBorrow=false] 在将 实例 提供给用户之前，池应该验证这些实例。</span></span><br><span class="line"><span class="comment"> * @param &#123;Boolean&#125; [options.autostart=true] 是不是需要在 池 初始化时 初始化 实例</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; [options.idleTimeoutMillis=3600000] 如果一个实例 60分钟 都没访问就关掉他</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; [options.evictionRunIntervalMillis=180000] 每 3分钟 检查一次 实例的访问状态</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; [options.puppeteerArgs=&#123;&#125;] puppeteer.launch 启动的参数</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [options.validator=(instance)=&gt;Promise.resolve(true))] 用户自定义校验 参数是 取到的一个实例</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; [options.otherConfig=&#123;&#125;] 剩余的其他参数 // For all opts, see opts at https://github.com/coopernurse/node-pool#createpool</span></span><br><span class="line"><span class="comment"> * @return &#123;Object&#125; pool</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">const</span> initPuppeteerPool = <span class="function">(<span class="params">options = &#123;&#125;, app</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123;</span><br><span class="line">    max = <span class="number">4</span>,</span><br><span class="line">    min = <span class="number">1</span>,</span><br><span class="line">    maxUses = <span class="number">2048</span>,</span><br><span class="line">    testOnBorrow = <span class="literal">false</span>,</span><br><span class="line">    autostart = <span class="literal">true</span>,</span><br><span class="line">    idleTimeoutMillis = <span class="number">3600000</span>,</span><br><span class="line">    evictionRunIntervalMillis = <span class="number">180000</span>,</span><br><span class="line">    puppeteerArgs = &#123;&#125;,</span><br><span class="line">    validator = <span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">Promise</span>.resolve(<span class="literal">true</span>),</span><br><span class="line">    ...otherConfig</span><br><span class="line">  &#125; = options</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> factory = &#123;</span><br><span class="line">    create: <span class="function"><span class="params">()</span> =&gt;</span></span><br><span class="line">      puppeteer.launch(puppeteerArgs).then(<span class="function"><span class="params">instance</span> =&gt;</span> &#123;</span><br><span class="line">        app.logger.info(<span class="string">'launch puppeteer success'</span>)</span><br><span class="line">        <span class="comment">// 创建一个 puppeteer 实例 ，并且初始化使用次数为 0</span></span><br><span class="line">        instance.useCount = <span class="number">0</span></span><br><span class="line">        <span class="keyword">return</span> instance</span><br><span class="line">      &#125;, error =&gt; &#123;</span><br><span class="line">        app.logger.error(<span class="string">'launch puppeteer failed'</span>, error)</span><br><span class="line">      &#125;),</span><br><span class="line">    destroy: <span class="function"><span class="params">instance</span> =&gt;</span> &#123;</span><br><span class="line">      instance.close()</span><br><span class="line">    &#125;,</span><br><span class="line">    validate: <span class="function"><span class="params">instance</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// 执行一次自定义校验，并且校验校验 实例已使用次数。 当 返回 reject 时 表示实例不可用</span></span><br><span class="line">      <span class="keyword">return</span> validator(instance).then(<span class="function"><span class="params">valid</span> =&gt;</span> <span class="built_in">Promise</span>.resolve(valid &amp;&amp; (maxUses &lt;= <span class="number">0</span> || instance.useCount &lt; maxUses)))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> config = &#123;</span><br><span class="line">    max,</span><br><span class="line">    min,</span><br><span class="line">    testOnBorrow,</span><br><span class="line">    autostart,</span><br><span class="line">    idleTimeoutMillis,</span><br><span class="line">    evictionRunIntervalMillis,</span><br><span class="line">    ...otherConfig</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> pool = genericPool.createPool(factory, config)</span><br><span class="line">  <span class="keyword">const</span> genericAcquire = pool.acquire.bind(pool)</span><br><span class="line">  <span class="comment">// 重写了原有池的消费实例的方法。添加一个实例使用次数的增加</span></span><br><span class="line">  pool.acquire = <span class="function"><span class="params">()</span> =&gt;</span></span><br><span class="line">    genericAcquire().then(<span class="function"><span class="params">instance</span> =&gt;</span> &#123;</span><br><span class="line">      instance.useCount += <span class="number">1</span></span><br><span class="line">      <span class="keyword">return</span> instance</span><br><span class="line">    &#125;)</span><br><span class="line">  pool.use = <span class="function"><span class="params">fn</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> resource</span><br><span class="line">    <span class="keyword">return</span> pool</span><br><span class="line">      .acquire()</span><br><span class="line">      .then(<span class="function"><span class="params">r</span> =&gt;</span> &#123;</span><br><span class="line">        resource = r</span><br><span class="line">        <span class="keyword">return</span> resource</span><br><span class="line">      &#125;)</span><br><span class="line">      .then(fn)</span><br><span class="line">      .then(</span><br><span class="line">        result =&gt; &#123;</span><br><span class="line">          <span class="comment">// 不管业务方使用实例成功与后都表示一下实例消费完成</span></span><br><span class="line">          pool.release(resource)</span><br><span class="line">          <span class="keyword">return</span> result</span><br><span class="line">        &#125;,</span><br><span class="line">        err =&gt; &#123;</span><br><span class="line">          pool.release(resource)</span><br><span class="line">          <span class="keyword">throw</span> err</span><br><span class="line">        &#125;</span><br><span class="line">      )</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> pool</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = initPuppeteerPool;</span><br><span class="line"></span><br><span class="line"><span class="comment">//app.js</span></span><br><span class="line"><span class="keyword">const</span> initPuppeteerPool = <span class="built_in">require</span>(<span class="string">'./app/utils/puppeteer-pool'</span>)</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppBootHook</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(app) &#123;</span><br><span class="line">    <span class="keyword">this</span>.app = app</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">async</span> didLoad() &#123;</span><br><span class="line">    <span class="comment">// 所有的配置已经加载完毕</span></span><br><span class="line">    <span class="comment">// 可以用来加载应用自定义的文件，启动自定义的服务</span></span><br><span class="line">    <span class="comment">// 虽然这里添加了一些puppeteer的启动参数，但是实测这些参数对截图服务的影响不大</span></span><br><span class="line">    <span class="keyword">this</span>.app.pool = initPuppeteerPool(</span><br><span class="line">      &#123;</span><br><span class="line">        puppeteerArgs: &#123;</span><br><span class="line">          headless: <span class="literal">true</span>,</span><br><span class="line">          args: [</span><br><span class="line">            <span class="string">'--disable-gpu'</span>,</span><br><span class="line">            <span class="string">'--no-sandbox'</span>, </span><br><span class="line">            <span class="string">'--disable-setuid-sandbox'</span>]</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="keyword">this</span>.app</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">async</span> beforeClose() &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.app.pool.drain) &#123;</span><br><span class="line">      <span class="keyword">await</span> <span class="keyword">this</span>.app.pool.drain().then(<span class="function"><span class="params">()</span> =&gt;</span> <span class="keyword">this</span>.app.pool.clear())</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = AppBootHook</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>此外，我们肯定还需要利用<code>redis</code>对请求结果进行缓存,阻止重复的不必要计算</p>
+</li>
+</ol>
+<h2 id="Node-js实践经验"><a href="#Node-js实践经验" class="headerlink" title="Node.js实践经验"></a>Node.js实践经验</h2><h3 id="如何解决物理构建机及服务器Node-js版本问题"><a href="#如何解决物理构建机及服务器Node-js版本问题" class="headerlink" title="如何解决物理构建机及服务器Node.js版本问题"></a>如何解决物理构建机及服务器Node.js版本问题</h3><p>我们在搭建和部署<code>Node</code>应用的时候经常遇到构建机或者服务器是物理机，集成的<code>Node</code>版本过低，又不方便升级，或者我们不同的<code>Node</code>应用依赖的<code>Node</code>版本不同，这种情况其实可以通过在应用中集成一个<code>Node Runtime</code>来解决。</p>
+<ul>
+<li>npm scripts </li>
+</ul>
+<p>我们经常看到<code>npm scripts</code>里面会直接调用一些命令，这些命令明显并没有被全局安装但是却可以通过<code>npm scripts</code>直接调用，比如下面的<code>egg-bin</code>命令，就可以直接通过<code>npm run debug</code>执行：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//package.json</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"name"</span>: <span class="string">"egg-showcase"</span>,</span><br><span class="line">  <span class="string">"scripts"</span>: &#123;</span><br><span class="line">    <span class="string">"start"</span>: <span class="string">"node index.js"</span>,</span><br><span class="line">    <span class="string">"debug"</span>: <span class="string">"egg-bin debug"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"devDependencies"</span>: &#123;</span><br><span class="line">    <span class="string">"egg-bin"</span>: <span class="string">"^4.7.0"</span>,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这是因为：<br><strong>通过 npm script 启动的脚本，会默认把 <code>node_modules/.bin</code> 加到 PATH 环境变量中。</strong><br>所以只要安装的<strong>npm包</strong>的<code>package.json</code>中定义了<a href="https://github.com/eggjs/egg-bin/blob/master/package.json#L7" target="_blank" rel="noopener">bin字段</a>，这个包安装后会软链到 <code>node_modules/.bin</code> ，从而能被寻址并执行。</p>
+<ul>
+<li>nodeinstall</li>
+</ul>
+<p>借助上面的这个原理，只要我们的<code>Node</code>服务构建机和部署机操作系统相同，我们就可以设置在构建阶段安装并打包好想要的<code>Node Runtime</code>，之后就可以不依赖机器自身的<code>Node</code>版本来运行了。<br><a href="https://github.com/cnpm/nodeinstall" target="_blank" rel="noopener">nodeinstall</a>就提供了这个功能，可以根据安装环境和指定版本自动安装可用的<code>Node Runtime</code>到<code>node_modules</code>文件夹下。</p>
+<p>安装好<code>Node Runtime</code>后，我们的<code>npm script</code>就可以运行于我们制定的<code>Node</code>版本了，后续我们将要使用的<strong>alinode性能监控平台</strong>也需要配合这个工具。</p>
+<p>下面是一个可以参考的<strong>NDP node runtime 安装脚本</strong><br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 这里是通过`Ant`脚本运行`Node`脚本，因为`Ant`语法和文档太乱了，写起来不方便阅读和维护 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">target</span> <span class="attr">name</span>=<span class="string">"nodeInstall"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">exec</span> <span class="attr">dir</span>=<span class="string">"./"</span> <span class="attr">executable</span>=<span class="string">"node"</span> <span class="attr">failonerror</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">arg</span> <span class="attr">line</span>=<span class="string">"deploy/install_node.js"</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">exec</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//判断是否安装过node或alinode，未安装则执行安装</span></span><br><span class="line"><span class="comment">//使用es5编写，防止node runtime安装前，构建机node版本过低导致的语法问题</span></span><br><span class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line"><span class="keyword">var</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>);</span><br><span class="line"><span class="keyword">var</span> execSync = <span class="built_in">require</span>(<span class="string">'child_process'</span>).execSync;</span><br><span class="line"><span class="keyword">var</span> nodePkgPath = path.resolve(<span class="string">'./node_modules/node/package.json'</span>);</span><br><span class="line"><span class="keyword">var</span> cyan = <span class="function"><span class="keyword">function</span> (<span class="params">s</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="string">'\u001b[36m'</span> + s + <span class="string">'\u001B[0m'</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> red = <span class="function"><span class="keyword">function</span> (<span class="params">s</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="string">'\u001b[31m'</span> + s + <span class="string">'\u001B[0m'</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(!fs.existsSync(nodePkgPath))&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(cyan(<span class="string">'Not found, install node now.'</span>));</span><br><span class="line">    <span class="comment">//"install:node": "nodeinstall --install-alinode ^4.8.3",</span></span><br><span class="line">    <span class="keyword">var</span> installCommand = execSync(<span class="string">`npm run install:node`</span>, &#123;<span class="attr">timeout</span>: <span class="number">30000</span>&#125;).toString().trim();</span><br><span class="line">    <span class="built_in">console</span>.log(installCommand);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (error) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(red(<span class="string">'Install node failed'</span>, error));</span><br><span class="line">    process.exit(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">  <span class="keyword">var</span> name = <span class="built_in">require</span>(nodePkgPath).name;</span><br><span class="line">  <span class="built_in">console</span>.log(cyan(name + <span class="string">' has already been installed'</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="如何调试Node-js应用"><a href="#如何调试Node-js应用" class="headerlink" title="如何调试Node.js应用"></a>如何调试Node.js应用</h3><p>很多时候我们写出来的代码并没有按照我们预期的运行，如果光靠猜和<code>console</code>，效率低而且容易遗漏，直接调试当然是最有效的手段。</p>
+<h4 id="Node-js调试协议"><a href="#Node-js调试协议" class="headerlink" title="Node.js调试协议"></a>Node.js调试协议</h4><p>Node v6.3+ 的版本提供了两个用于调试的协议：<code>v8 Debugger Protocol</code> 和 <code>v8 Inspector Protocol</code> 可以使用第三方的 Client/IDE 等监测和介入 Node(v8) 运行过程，进行调试。</p>
+<ul>
+<li><a href="https://github.com/buggerjs/bugger-v8-client/blob/master/PROTOCOL.md" target="_blank" rel="noopener">v8 Debugger Protocol</a> 是 <code>Node</code> v6.3 之前的版本就支持的调试协议，使用一个 <code>TCP</code> 端口（通常是 5858）与 Client/IDE 交互</li>
+<li><p><a href="https://chromedevtools.github.io/devtools-protocol/v8/" target="_blank" rel="noopener">v8 Inspector Protocol</a> 是 <code>Node</code> v6.3 新加入的调试协议，通过 <code>websocket</code> （通常使用 9229 端口）与 Client/IDE 交互，同时基于 Chrome/Chromium 浏览器的 devtools 提供了图形化的调试界面。</p>
+</li>
+<li><p>–inspect或–inspect=[host:port] 开启调试代理,可以制定host和端口，默认为<code>127.0.0.1:9229</code></p>
+</li>
+<li>–inspect-brk或–inspect-brk=[host:port] 开启调试代理,并且在第一行用户代码停止，等待调试客户端的连接</li>
+</ul>
+<h4 id="通过Chrome进行调试"><a href="#通过Chrome进行调试" class="headerlink" title="通过Chrome进行调试"></a>通过Chrome进行调试</h4><p><a href="http://www.ruanyifeng.com/blog/2018/03/node-debugger.html" target="_blank" rel="noopener">Node 调试工具入门教程 - 阮一峰的网络日志</a></p>
+<h4 id="通过VS-Code进行调试"><a href="#通过VS-Code进行调试" class="headerlink" title="通过VS Code进行调试"></a>通过VS Code进行调试</h4><p>下面主要介绍一下使用VS Code的几种比较常用的调试方式，它的英文文档读起来比较费力，但是使用还是比较方便的[doge]。<br>VS Code提供了便携的基于配置文件的调试方式：<br><img src="https://easyreadfs.nosdn.127.net/1574236663351/interface.png" alt="VS Code调试界面"></p>
+<ul>
+<li>选择已经在运行的<code>Node</code>进程启动调试<br>配置如下：<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  // 使用 IntelliSense 了解相关属性。 </span><br><span class="line">  // 悬停以查看现有属性的描述。</span><br><span class="line">  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387</span><br><span class="line">  "version": "0.2.0",</span><br><span class="line">  "configurations": [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">      <span class="attr">"request"</span>: <span class="string">"attach"</span>,</span><br><span class="line">      <span class="attr">"name"</span>: <span class="string">"Attach by Select Process"</span>,</span><br><span class="line">      <span class="attr">"processId"</span>: <span class="string">"$&#123;command:PickProcess&#125;"</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>效果：<br><img src="https://easyreadfs.nosdn.127.net/1574236995185/pick.png" alt="pick process"></p>
+<ul>
+<li><p>自动启动调试<br>当我们设置<code>Auto Attach</code>为<code>On</code>的时候，如果我们在VS Code的终端内使用<code>--inspect</code>, <code>--inspect-brk</code>, <code>--inspect-port</code>, <code>--debug</code>, <code>--debug-brk</code>, <code>--debug-port</code>等模式启动<code>Node</code>进程的时候，它就会自动绑定调试环境进入调试状态，比如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node --inspect test.js</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配合自定义命令启动应用以及调试<br>例如，<code>Egg.js</code>应用的调试配置：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">  <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">  <span class="attr">"name"</span>: <span class="string">"Egg Debug"</span>,</span><br><span class="line">  <span class="attr">"runtimeExecutable"</span>: <span class="string">"npm"</span>,</span><br><span class="line">  <span class="attr">"runtimeArgs"</span>: [</span><br><span class="line">    <span class="string">"run"</span>,</span><br><span class="line">    <span class="string">"debug"</span>,</span><br><span class="line">    <span class="string">"--"</span>,</span><br><span class="line">    <span class="string">"--inspect-brk"</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">"console"</span>: <span class="string">"integratedTerminal"</span>,</span><br><span class="line">  <span class="attr">"restart"</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">"protocol"</span>: <span class="string">"auto"</span>,</span><br><span class="line">  <span class="attr">"port"</span>: <span class="number">9229</span>,</span><br><span class="line">  <span class="attr">"autoAttachChildProcesses"</span>: <span class="literal">true</span></span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调试远程的Node应用<br>有时候我们确实需要调试运行在远端服务器上的<code>Node</code>应用,那么我们就需要首先用<code>--inspect</code>或者<code>--inspect-brk</code>开启调试:</p>
+<ul>
+<li>简单应用远程调试<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node --inspect-brk=10.x.x.x:9229 test.js</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>如果不指定host，将无法通过ip进行远程调试，只能在远程服务器本机连接并调试。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">    <span class="attr">"request"</span>: <span class="string">"attach"</span>,</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"Attach to remote ip"</span>,</span><br><span class="line">    <span class="attr">"localRoot"</span>: <span class="string">"$&#123;workspaceRoot&#125;"</span>,</span><br><span class="line">    <span class="attr">"remoteRoot"</span>: <span class="string">"/Users/liushichuan/Documents/work/snailreader-node"</span>,</span><br><span class="line">    <span class="attr">"address"</span>: <span class="string">"10.x.x.x"</span>,</span><br><span class="line">    <span class="attr">"protocol"</span>: <span class="string">"auto"</span>,</span><br><span class="line">    <span class="attr">"trace"</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">"port"</span>: <span class="number">9229</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Egg的远程调试<br><code>Egg.js</code>的远程调试因为它的多进程模型，稍微复杂一些。<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//package.json</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">"scripts"</span>: &#123;</span><br><span class="line">    <span class="attr">"debug:remote"</span>: <span class="string">"EGG_SERVER_ENV=prod EGG_AGENT_DEBUG_PORT=6100 egg-bin debug --debug-port=6000 --proxy=6200"</span>,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>参数解释：</p>
+<ul>
+<li><code>EGG_SERVER_ENV=prod</code> 设置<code>Egg</code>的运行环境为生产(debug模式下默认为<code>local</code>)，可以不必执行一些开发环境中的流程，非必须</li>
+<li><code>EGG_AGENT_DEBUG_PORT=6100</code> 设置Agent进程的调试端口(默认 5800)，防止端口冲突而调试启动失败，非必须</li>
+<li><code>egg-bin debug</code> 使用<a href="https://github.com/eggjs/egg-bin" target="_blank" rel="noopener">egg-bin</a>工具启动调试流程</li>
+<li><code>--debug-port=6000</code> 设置<code>Master</code>进程调试端口(默认9229)，防止端口冲突，非必须</li>
+<li><code>--proxy=6200</code> 设置<code>Worker</code>进程远程调试端口（默认9999），<code>Worker</code>进程真实调试端口会从<code>Master</code>端口之后累加并取可用端口，因为<code>Worker</code>进程是可能出错并重启然后更改端口的，<strong>这里设置的是自动代理<code>Worker</code>进程的真实端口并把其<code>websocket</code>协议代理到固定的端口</strong>，非必须</li>
+</ul>
+</li>
+</ul>
+<p>在远程调试进程启动后，使用如下配置，就可以连接进行断点调试了：<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">      <span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">      <span class="attr">"request"</span>: <span class="string">"attach"</span>,</span><br><span class="line">      <span class="attr">"name"</span>: <span class="string">"Attach to remote Egg"</span>,</span><br><span class="line">      <span class="attr">"localRoot"</span>: <span class="string">"$&#123;workspaceRoot&#125;"</span>,</span><br><span class="line">      <span class="attr">"remoteRoot"</span>: <span class="string">"/home/qafunc/snailreader-node/snailreader-node-test/default/approot"</span>,</span><br><span class="line">      <span class="attr">"address"</span>: <span class="string">"10.x.x.x"</span>,</span><br><span class="line">      <span class="attr">"protocol"</span>: <span class="string">"auto"</span>,</span><br><span class="line">      <span class="attr">"port"</span>: <span class="number">6200</span></span><br><span class="line">    &#125;,</span><br></pre></td></tr></table></figure></p>
+<p>其他的未介绍的调试方式可以继续阅读<a href="https://code.visualstudio.com/docs/nodejs/nodejs-debugging" target="_blank" rel="noopener">官方文档</a></p>
+<h3 id="如何监控Node-js应用"><a href="#如何监控Node-js应用" class="headerlink" title="如何监控Node.js应用"></a>如何监控Node.js应用</h3><p>当我们的<code>Node.js</code>应用顺利部署和运行，就需要有一个能够及时监控它的运行情况的工具了，比如机器的CPU占用，内存占用，QPS，报警通知等等。</p>
+<h4 id="Node-js性能监控平台-alinode"><a href="#Node-js性能监控平台-alinode" class="headerlink" title="Node.js性能监控平台(alinode)"></a>Node.js性能监控平台(alinode)</h4><blockquote>
+<p><a href="https://www.aliyun.com/product/nodejs" target="_blank" rel="noopener">Node.js 性能平台</a> 是面向所有 Node.js 应用提供 性能监控、安全提醒、故障排查、性能优化 等服务的整体性解决方案，提供完善的工具链和服务，协助开发者快速发现和定位线上问题。</p>
+</blockquote>
+<p>在该平台注册并开通后即可获取<code>appid</code>和<code>secret</code>，目前所有功能的使用是免费的。<br><img src="https://easyreadfs.nosdn.127.net/1574253402890/monitor.png" alt="监控平台"></p>
+<h4 id="AliNode-Runtime-及-agenthub"><a href="#AliNode-Runtime-及-agenthub" class="headerlink" title="AliNode Runtime 及 agenthub"></a>AliNode Runtime 及 agenthub</h4><ul>
+<li><a href="AliNode Runtime">AliNode Runtime</a> 提供了官方<code>Node.js Runtime</code>同样的功能，并且为监控提供了底层支持。</li>
+<li><a href="https://github.com/aliyun-node/agenthub" target="_blank" rel="noopener">agenthub</a> agenthub 是由 Node.js 性能平台提供的 agent 命令程序，用于协助Node 应用性能数据上报和问题诊断，它运行后通过<code>websocket</code>与性能平台连接，提供了实时查看cpu负载，内存堆栈，错误日志等等数据的能力。</li>
+</ul>
+<h4 id="egg-alinode"><a href="#egg-alinode" class="headerlink" title="egg-alinode"></a>egg-alinode</h4><p>如果使用的是<code>Egg</code>，得益于其科学的插件机制设计，可以很简单的通过<code>egg-alinode</code>插件接入<code>agenthub</code>监控到应用当中，安装后只需如下配置：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//plugin.prod.js</span></span><br><span class="line">exports.alinode = &#123;</span><br><span class="line">  enable: <span class="literal">true</span>,</span><br><span class="line">  package: <span class="string">'egg-alinode'</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//config.prod.js</span></span><br><span class="line">exports.alinode = &#123;</span><br><span class="line">  server: <span class="string">'wss://agentserver.node.aliyun.com:8080'</span>,</span><br><span class="line">  appid: <span class="string">'xxxx'</span>,</span><br><span class="line">  secret: <span class="string">'xxxxxxx'</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h4 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h4><p>该平台提供了一系列的<a href="https://yq.aliyun.com/teams/210/type_blog?spm=a2c4e.11153959.0.0.67166d49HjEImi" target="_blank" rel="noopener">使用说明和故障排查案例文章</a>来介绍使用方法。<br>我们可以使用该平台对我们的应用和服务器保持详细清晰的监控和分析，包括且不限于下列需求：</p>
+<ul>
+<li>服务器及应用数据及信息实时查看（CPU、内存、磁盘、负载、QPS、GC等）</li>
+<li>报警通知及错误信息分析</li>
+<li>进程CPU及内存运行状态抓取，比如：<ul>
+<li>应用的压测：配合<code>loadtest</code>等压测工具，抓取压测期间的<strong>CPU Profile</strong>并加以分析，优化我们的应用性能；</li>
+<li>内存泄露问题定位：抓取可疑泄露进程的<strong>堆快照</strong>或者进程崩溃时自动生成的<strong>核心转储文件</strong>，分析内存使用情况，定位内存问题。</li>
+</ul>
+</li>
+</ul>
+<h2 id="实践中遇到的问题及解决办法"><a href="#实践中遇到的问题及解决办法" class="headerlink" title="实践中遇到的问题及解决办法"></a>实践中遇到的问题及解决办法</h2><ol>
+<li><code>Egg</code>中的<strong>Worker</strong>是如何实现监听同一个端口和协同调度的？</li>
+</ol>
+<p>JavaScript 代码是运行在单线程上的，换句话说一个 <code>Node.js</code> 进程只能运行在一个 CPU 上。那么如果用 <code>Node.js</code> 来做 Web Server，就无法享受到多核运算的好处。</p>
+<p><code>Node.js</code> 官方提供的解决方案是 <a href="https://nodejs.org/api/cluster.html" target="_blank" rel="noopener">Cluster</a> 模块:</p>
+<blockquote>
+<p>单个 Node.js 实例在单线程环境下运行。为了更好地利用多核环境，用户有时希望启动一批 Node.js 进程用于加载。<br>集群化模块使得你很方便地创建子进程，以便于在服务端口之间共享。</p>
+</blockquote>
+<p>简单来说<strong>Worker</strong>就是通过<code>Cluster</code>模块创建的，<strong>Worker</strong>的数量通常等于CPU的核心数，以便最大限度的利用CPU的运算能力。<strong>Worker</strong>其实并没有真正直接监听端口，而是通过<strong>Master</strong>来统一监听和分发，除了<code>Windows</code>平台外（<a href="https://docs.microsoft.com/zh-cn/windows/win32/fileio/i-o-completion-ports?redirectedfrom=MSDN" target="_blank" rel="noopener">IOCP</a>），其他平台使用的都是 <a href="https://en.wikipedia.org/wiki/Round-robin_scheduling" target="_blank" rel="noopener">round-robin</a> 调度算法，也就是轮转算法。具体的工作原理可以查看<a href="https://juejin.im/post/5b178f535188257d5902fdfa" target="_blank" rel="noopener">Node.js cluster模块解读</a>。</p>
+<ol start="2">
+<li>agentHub无法获取堆快照等性能指标的问题</li>
+</ol>
+<ul>
+<li>最初我使用的是<code>egg-alinode</code>插件集成的<code>agenthub</code>进行监控，它是开箱即用的。部署成功以后，可以查看系统的统计信息，但是无法抓取进程的<strong>堆快照</strong>或者<strong>CPU Profile</strong>等信息，提示操作失败。</li>
+<li><p>经过咨询，这种情况的错误定位需要独立启动<a href="https://github.com/aliyun-node/agenthub" target="_blank" rel="noopener">agenthub</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DEBUG=alinode_agent agenthub start</span><br></pre></td></tr></table></figure>
+<p>然后查看<code>~/.agenthub.log</code>的具体日志了解问题。</p>
+</li>
+<li>打开日志检索后，可以看到如下失败信息：<br><img src="https://easyreadfs.nosdn.127.net/1574301288749/IMG_3171.PNG" alt="error"></li>
+<li>分析这个错误信息：前面提到过，设置了<code>bin</code>字段的<code>npm</code>包是会在<code>node_modules/.bin/</code>下建立软连接的，实际运行的还是自己包内的文件，相对路由的查找也是如此，而这里的错误却是<code>node_modules/.bin</code>下文件找不到。</li>
+<li>SSH到服务器查看后才发现，我部署机上的<code>node_modules/.bin</code>下的文件全都不是软连接，而是真实的文件。</li>
+<li>由此才定位到，<code>NDP</code>中部署的<code>Ant</code>脚本中的<code>copy</code>命令在拷贝构建后的文件到<code>compressed</code>文件夹时，把软连接全部拷贝成了真实文件，导致了<code>bin</code>文件的工作机制失效。</li>
+</ul>
+<p>所以，解决办法就是使用shell命令来拷贝软连接部分文件：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">target</span> <span class="attr">name</span>=<span class="string">"cp"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">copy</span> <span class="attr">todir</span>=<span class="string">"$&#123;compress.dir&#125;"</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">fileset</span> <span class="attr">dir</span>=<span class="string">"."</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclude</span> <span class="attr">name</span>=<span class="string">"build.xml"</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclude</span> <span class="attr">name</span>=<span class="string">".git"</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclude</span> <span class="attr">name</span>=<span class="string">".svn"</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclude</span> <span class="attr">name</span>=<span class="string">"node_modules/.bin/**"</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclude</span> <span class="attr">name</span>=<span class="string">"$&#123;compress.dir&#125;"</span> /&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">fileset</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">copy</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">exec</span> <span class="attr">dir</span>=<span class="string">"./"</span> <span class="attr">executable</span>=<span class="string">"cp"</span> <span class="attr">failonerror</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">arg</span> <span class="attr">line</span>=<span class="string">"-r node_modules/.bin/ compressed/node_modules/.bin/"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">exec</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<ol start="3">
+<li>imagemin-quant安装失败<br><code>Puppeteer</code>生成的<code>PNG</code>格式的文件体积过大，传输耗时长，压缩后图片感官质量下降很少，但是却能提高传输速度，所以最好使用图片压缩工具压缩后再上传到NOS。我这里使用的是<a href="https://github.com/imagemin/imagemin" target="_blank" rel="noopener">imagemin</a>以及<a href="https://github.com/imagemin/imagemin-pngquant" target="_blank" rel="noopener">imagemin-pngquant</a>。</li>
+</ol>
+<p>安装时可能会因为一些依赖不存在而失败，需要提工单安装<code>libpng-dev</code></p>
+<ol start="4">
+<li><p>截图中文字体无法显示<br>需要安装支持中文的字体<code>fonts-wqy-zenhei</code></p>
+</li>
+<li><p>redis连接反复重试并报错<br><code>egg-redis</code>配置完成后，会反复重试直到超过最大重试次数而失败：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ERROR 2102 nodejs.MaxRetriesPerRequestError: Reached the max retries per request limit (which is 20)</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>但是换成<code>redis-cli</code>连接就没有问题。</p>
+<p><code>egg-redis</code>封装的是比较主流的<code>redis</code>工具库<a href="https://github.com/luin/ioredis" target="_blank" rel="noopener">ioredis</a>，<code>Node</code>中<code>redis</code>在连接服务器的时候，默认情况下会发送一个<code>INFO</code>命令检查数据库的连接情况，如果没有收到确认的回复，会不断的重试，从而导致失败。</p>
+<blockquote>
+<p>When a connection is established to the Redis server, the server might still be loading the database from disk. While loading, the server will not respond to any commands. To work around this, node_redis has a “ready check” which sends the INFO command to the server. The response from the INFO command indicates whether the server is ready for more commands. When ready, node_redis emits a ready event. Setting no_ready_check to true will inhibit this check.</p>
+</blockquote>
+<p>所以需要设置<code>enableReadyCheck: false</code></p>
+<ol start="6">
+<li><p>如何查看应用的运行状态</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef | grep -e start-cluster.*--title=snailreader-node-test | grep -v 'grep'</span><br></pre></td></tr></table></figure>
+<p><code>title</code>为<code>Egg</code>应用启动时传递给<code>egg-scripts</code>的参数。<br><a href="https://explainshell.com/explain?cmd=ps+-ef+%7C+grep+-e+start-cluster.*--title%3Dsnailreader-node-test+%7C+grep+-v+%27grep%27" target="_blank" rel="noopener">命令详细解释</a></p>
+</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><code>Node.js</code>已经广泛应用于前端开发的业务中，我们在开发和搭建完成<code>Node.js</code>服务后，如果没有办法像一些成熟的后端语言一样全面的掌握应用的运行状况，准确的调试和定位应用的运行问题，只靠一些简单的日志收集和想当然的开发和维护，<code>Node.js</code>是无法真正可靠的服务于我们的业务需求的。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Node-js-Node-Egg-js-Puppeteer/">Node.js, Node, Egg.js, Puppeteer</a>
+  </div>
+
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://icewind-blog.com/2019/11/18/exprience-of-nodejs-development/" data-title="Node.js实践经验总结 | Icewind Blog" data-tsina="2099631680" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2019/04/15/things-about-static-assets-repository/" title="搭建静态资源工程的一些经验">
+ <strong>下一篇：</strong><br> 
+ <span>搭建静态资源工程的一些经验
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#意义"><span class="toc-number">1.</span> <span class="toc-text">意义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#为什么要搭建这么一套截图服务"><span class="toc-number">1.1.</span> <span class="toc-text">为什么要搭建这么一套截图服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#为什么选择使用Egg-js和Puppeteer"><span class="toc-number">1.2.</span> <span class="toc-text">为什么选择使用Egg.js和Puppeteer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Egg-js"><span class="toc-number">2.</span> <span class="toc-text">Egg.js</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#运行原理"><span class="toc-number">2.1.</span> <span class="toc-text">运行原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#目录结构"><span class="toc-number">2.2.</span> <span class="toc-text">目录结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#应用"><span class="toc-number">2.3.</span> <span class="toc-text">应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Puppeteer"><span class="toc-number">3.</span> <span class="toc-text">Puppeteer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#名词解释"><span class="toc-number">3.1.</span> <span class="toc-text">名词解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#截图API"><span class="toc-number">3.2.</span> <span class="toc-text">截图API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#截图性能优化"><span class="toc-number">3.3.</span> <span class="toc-text">截图性能优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Node-js实践经验"><span class="toc-number">4.</span> <span class="toc-text">Node.js实践经验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#如何解决物理构建机及服务器Node-js版本问题"><span class="toc-number">4.1.</span> <span class="toc-text">如何解决物理构建机及服务器Node.js版本问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#如何调试Node-js应用"><span class="toc-number">4.2.</span> <span class="toc-text">如何调试Node.js应用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Node-js调试协议"><span class="toc-number">4.2.1.</span> <span class="toc-text">Node.js调试协议</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#通过Chrome进行调试"><span class="toc-number">4.2.2.</span> <span class="toc-text">通过Chrome进行调试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#通过VS-Code进行调试"><span class="toc-number">4.2.3.</span> <span class="toc-text">通过VS Code进行调试</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#如何监控Node-js应用"><span class="toc-number">4.3.</span> <span class="toc-text">如何监控Node.js应用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Node-js性能监控平台-alinode"><span class="toc-number">4.3.1.</span> <span class="toc-text">Node.js性能监控平台(alinode)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AliNode-Runtime-及-agenthub"><span class="toc-number">4.3.2.</span> <span class="toc-text">AliNode Runtime 及 agenthub</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#egg-alinode"><span class="toc-number">4.3.3.</span> <span class="toc-text">egg-alinode</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用方法"><span class="toc-number">4.3.4.</span> <span class="toc-text">使用方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实践中遇到的问题及解决办法"><span class="toc-number">5.</span> <span class="toc-text">实践中遇到的问题及解决办法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/Node/" title="Node">Node<sup>1</sup></a></li>
+		
+			<li><a href="/categories/前端/" title="前端">前端<sup>25</sup></a></li>
+		
+			<li><a href="/categories/博客/" title="博客">博客<sup>2</sup></a></li>
+		
+			<li><a href="/categories/数码/" title="数码">数码<sup>1</sup></a></li>
+		
+			<li><a href="/categories/随笔/" title="随笔">随笔<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/AJAX/" title="AJAX">AJAX<sup>1</sup></a></li>
+		
+			<li><a href="/tags/CSS/" title="CSS">CSS<sup>9</sup></a></li>
+		
+			<li><a href="/tags/CSS3/" title="CSS3">CSS3<sup>1</sup></a></li>
+		
+			<li><a href="/tags/HTML/" title="HTML">HTML<sup>9</sup></a></li>
+		
+			<li><a href="/tags/HTML5/" title="HTML5">HTML5<sup>2</sup></a></li>
+		
+			<li><a href="/tags/IOS/" title="IOS">IOS<sup>1</sup></a></li>
+		
+			<li><a href="/tags/JSONP/" title="JSONP">JSONP<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Javascript/" title="Javascript">Javascript<sup>12</sup></a></li>
+		
+			<li><a href="/tags/Javscript/" title="Javscript">Javscript<sup>2</sup></a></li>
+		
+			<li><a href="/tags/Node/" title="Node">Node<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Node-js-Node-Egg-js-Puppeteer/" title="Node.js, Node, Egg.js, Puppeteer">Node.js, Node, Egg.js, Puppeteer<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Rich-text-editor/" title="Rich text editor">Rich text editor<sup>1</sup></a></li>
+		
+			<li><a href="/tags/URL/" title="URL">URL<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Vue/" title="Vue">Vue<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Webpack/" title="Webpack">Webpack<sup>1</sup></a></li>
+		
+			<li><a href="/tags/browser/" title="browser">browser<sup>1</sup></a></li>
+		
+			<li><a href="/tags/canvas/" title="canvas">canvas<sup>1</sup></a></li>
+		
+			<li><a href="/tags/config/" title="config">config<sup>1</sup></a></li>
+		
+			<li><a href="/tags/error/" title="error">error<sup>1</sup></a></li>
+		
+			<li><a href="/tags/hexo/" title="hexo">hexo<sup>3</sup></a></li>
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+      <li><a href="http://bbs.byr.cn/" target="_blank" title="BYR">北邮人论坛</a></li>
+      <li><a href="http://yangjian.me" target="_blank" title="YangJian">Alimon's Blog</a></li>
+      <li><a href="http://zipperary.com/" target="_blank" title="zippera">Zippera's Blog</a></li>
+      <li><a href="http://wuchong.me/" target="_blank" title="WuChong">Jark's Blog</a></li>
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		
+		<a href="http://weibo.com/2099631680" target="_blank"><div class="author"></div></a>
+		
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m Icewind. For now I&#39;m a developer of FE in Hangzhou. <br>
+			I&#39;ll share my learning experience with you at this blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/2099631680" target="_blank" class="icon-weibo" title="weibo"></a>
+		
+		
+		<a href="https://github.com/icewind7030" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:liushichuan@163.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://zespia.tw/hexo/" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Pacman">Jacman</a> © 2020 
+		
+		<a href="http://icewind-blog.com/about" target="_blank" title="Icewind">Icewind</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+    c.click(function(){
+      ta.css('display', 'block').addClass('fadeIn');
+    });
+    o.click(function(){
+      ta.css('display', 'none');
+    });
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,320-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox({
+      type: 'image'
+    });
+  }
+}); 
+</script>
+
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-51186401-1', 'icewind-blog.com');  
+ga('send', 'pageview');
+</script>
+
+
+<div id="totop">
+<a title="返回顶部"><img src="/img/scrollup.png"></a>
+</div>
+
+<script src="/js/totop.js"></script>
+
+<script type="text/x-mathjax-config"> 
+MathJax.Hub.Config({ 
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} 
+}); 
+</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+  </body>
+</html>
