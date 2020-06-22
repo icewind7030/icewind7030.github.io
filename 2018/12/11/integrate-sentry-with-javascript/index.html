@@ -4,12 +4,13 @@
 <head><meta name="generator" content="Hexo 3.8.0">
   <meta charset="UTF-8">
   
-    <title>如何使用Sentry监控前端错误 | Icewind Blog</title>
+    <title>Icewind Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Icewind">
     
-    <meta name="description" content="前端中开发难免遇到一些测试阶段没有覆盖到的错误和问题，这些问题一旦发生在用户端，问题的沟通和定位成本就会很高，所以我们需要一个能够自动监控错误并且上报详细信息的平台，Sentry就是提供这样一个服务的产品。本文主要介绍前端项目中如何集成Sentry来完成错误的监控。">
+    <meta name="description" content="简介
+Sentry is an Open-source error tracking that helps you monitor and fix crashes in real time. Here we cover everything about the product and the pla">
     
     
     
@@ -68,12 +69,12 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2018/12/11/integrate-sentry-with-javascript/" title="如何使用Sentry监控前端错误" itemprop="url">如何使用Sentry监控前端错误</a>
+      <a href="/2018/12/11/integrate-sentry-with-javascript/" title="" itemprop="url"></a>
   </h1>
   <p class="article-author">By
       <a href="http://icewind-blog.com/about" title="Icewind" target="_blank">Icewind</a>
   </p><p class="article-time">
-    <time datetime="2018-12-11T06:13:41.000Z" itemprop="datePublished">发表于2018-12-11</time>
+    <time datetime="2018-12-11T06:13:41.735Z" itemprop="datePublished">发表于2018-12-11</time>
     
   </p>
 </header>
@@ -87,9 +88,7 @@
 		
 		</div>
 		
-		<p>前端中开发难免遇到一些测试阶段没有覆盖到的错误和问题，这些问题一旦发生在用户端，问题的沟通和定位成本就会很高，所以我们需要一个能够自动监控错误并且上报详细信息的平台，<a href="https://sentry.io/welcome/" target="_blank" rel="noopener">Sentry</a>就是提供这样一个服务的产品。本文主要介绍前端项目中如何集成Sentry来完成错误的监控。</p>
-<a id="more"></a>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><blockquote>
+		<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><blockquote>
 <p>Sentry is an Open-source error tracking that helps you monitor and fix crashes in real time. Here we cover everything about the product and the platform integrations and our on-prem offering.</p>
 </blockquote>
 <p>Sentry是一款能够帮助你实时监控并且解决错误的开源产品，它基本覆盖了所有的技术栈以及使用场景。虽然它是一款开源产品，但是它的开发者也提供收费的直接接入服务，同时我们也可以选择自行搭建免费的服务，这就需要硬件方面的投入。</p>
@@ -113,7 +112,7 @@
 <li>Admin 高级用户</li>
 <li>Member 普通用户</li>
 </ul>
-<p>他们的具体区别见下表：<br><img src="https://easyread.nosdn.127.net/web/trunk/1544580858346/wx20181212-101349.png" alt="角色权限列表"><br>其中还有个<code>Billing</code>，这个是账单相关的一个角色，应该是类似财务一类的工作者。<br><strong>要点</strong>：</p>
+<p>他们的具体区别见下表：<br><img src="https://easyreadfs.nosdn.127.net/1592833587640/WX20181212-101349.png" alt="角色权限列表"><br>其中还有个<code>Billing</code>，这个是账单相关的一个角色，应该是类似财务一类的工作者。<br><strong>要点</strong>：</p>
 <ul>
 <li>如果<code>Manager</code>以上的成员将组织的<code>Open Membership</code>开关打开，成员就可以自行选择加入或退出组织下的团队，否则需要邀请或者管理员以上申请通过才可加入</li>
 <li><code>Admin</code>以上角色的成员只要他本人加入了某个团队，他就具有删除这个团队和团队下所有项目的权限</li>
@@ -121,7 +120,7 @@
 <li>一旦<code>Open Membership</code>开关打开，任意成员就可以随意加入任何团队，而一旦这个成员是<code>Admin</code>或更高的角色，这就意味着<strong>他可以随意删除组织下的任何团队和项目，这是非常不安全的</strong>。</li>
 </ul>
 <p>所以，建议Sentry的管理者将<code>Open Membership</code>开关关闭，保证平台的稳定性。</p>
-<h2 id="接入"><a href="#接入" class="headerlink" title="接入"></a>接入</h2><h3 id="新建项目"><a href="#新建项目" class="headerlink" title="新建项目"></a>新建项目</h3><p>Sentry作为一款开源错误及事件监控平台，所支持的语言和框架非常全面，我们可以在新建项目时进行选择，以下是列举的一下较为流行的语言或者框架：<br><img src="https://easyread.nosdn.127.net/web/trunk/1544582289481/wx20181211-095810.png" alt="语言框架选择"><br>我们这里主要介绍前端的接入方式，所以我们选择<code>JavaScript</code>。</p>
+<h2 id="接入"><a href="#接入" class="headerlink" title="接入"></a>接入</h2><h3 id="新建项目"><a href="#新建项目" class="headerlink" title="新建项目"></a>新建项目</h3><p>Sentry作为一款开源错误及事件监控平台，所支持的语言和框架非常全面，我们可以在新建项目时进行选择，以下是列举的一下较为流行的语言或者框架：<br><img src="https://easyreadfs.nosdn.127.net/1592833698223/WX20181211-095810.png" alt="语言框架选择"><br>我们这里主要介绍前端的接入方式，所以我们选择<code>JavaScript</code>。</p>
 <h3 id="接入SDK"><a href="#接入SDK" class="headerlink" title="接入SDK"></a>接入SDK</h3><p>项目一旦创建完成，Sentry平台会直接在项目的看板上指引你如何进行对应语言的接入。</p>
 <blockquote>
 <p>这里需要说明的是，由于我们产品使用的是本地部署的Sentry，可能是附带部署的本地说明文档版本不够新，本地新建的Javascript项目显示的接入指引<strong>并不是最新的接入SDK</strong>，它建议的是引入<code>raven-js</code>，而官方的SDK已经升级为<code>@sentry/browser</code>，原SDK只进行bug修复方面的维护，所有新的特性都开发在新SDK上，所以接入方式还是建议去<a href="https://docs.sentry.io/error-reporting/quickstart/?platform=browsernpm" target="_blank" rel="noopener">Sentry官网文档</a>进行查询最新的文档。</p>
@@ -190,11 +189,11 @@
 </li>
 <li><p>授权<code>sentry-cli</code></p>
 <ol>
-<li>如果是首次配置，我们在需要<code>webpack</code>打包的文件目录下运行<code>sentry-cli login</code>命令进行授权，命令行将会指引我们打开浏览器新建一个<code>authentication token</code>（不同于新建项目以后自动生成的那个<code>Security Token</code>）；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545124990651/login.png" alt="open-browser"></li>
-<li>按照指示唤起浏览器后，点击新建一个<code>token</code>；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545125157110/createtoken.png" alt="create-token"></li>
-<li>新建<code>token</code>时需要选择该<code>token</code>有效的作用域，也就是该<code>token</code>的权限，如果需要在<code>webpack</code>打包过程中自动上传SourceMap到Sentry服务器并解析，我们至少需要勾选<code>project:read</code>和<code>project:releases</code>；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545125268749/tokenscopes.png" alt="token-scope"></li>
-<li><code>token</code>新建完成；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545125391771/token.png" alt="token"></li>
-<li>将获得的<code>token</code>填入之前<code>sentry-cli login</code>命令打开的终端中；<br><img src="https://easyread.nosdn.127.net/web/trunk/1545199800802/token-saved.png" alt="token-saved"></li>
+<li>如果是首次配置，我们在需要<code>webpack</code>打包的文件目录下运行<code>sentry-cli login</code>命令进行授权，命令行将会指引我们打开浏览器新建一个<code>authentication token</code>（不同于新建项目以后自动生成的那个<code>Security Token</code>）；<br><img src="https://easyreadfs.nosdn.127.net/1592833617320/login.png" alt="open-browser"></li>
+<li>按照指示唤起浏览器后，点击新建一个<code>token</code>；<br><img src="https://easyreadfs.nosdn.127.net/1592833628829/createToken.png" alt="create-token"></li>
+<li>新建<code>token</code>时需要选择该<code>token</code>有效的作用域，也就是该<code>token</code>的权限，如果需要在<code>webpack</code>打包过程中自动上传SourceMap到Sentry服务器并解析，我们至少需要勾选<code>project:read</code>和<code>project:releases</code>；<br><img src="https://easyreadfs.nosdn.127.net/1592833653248/tokenScopes.png" alt="token-scope"></li>
+<li><code>token</code>新建完成；<br><img src="https://easyreadfs.nosdn.127.net/1592833665387/token.png" alt="token"></li>
+<li>将获得的<code>token</code>填入之前<code>sentry-cli login</code>命令打开的终端中；<br><img src="https://easyreadfs.nosdn.127.net/1592833680460/token-saved.png" alt="token-saved"></li>
 <li>此时能看到<code>sentry-cli</code>自动将我们填入的<code>token</code>写入了我们新建的<code>.sentryclirc</code>配置文件中，这个新建的token是对应于整个Sentry服务器的，并不是只对应于某一个项目，之后如果还想要查看，可以通过访问<code>https://myserver.invalid/api/</code>来查看。</li>
 </ol>
 </li>
@@ -208,7 +207,7 @@
 </ol>
 <ul>
 <li>模式一工作的前提是必须指定<code>Sentry Webpack Plugin</code>以及<code>@sentry/browser SDk</code>的release，且他们必须一致</li>
-<li><code>Sentry Webpack Plugin</code>的<code>urlPrefix</code>选项必须正确配置。如果页面URL为<code>https://www.test.com/activity20181212/dist/index.html</code>，报错对应的Javascript为<code>https://www.test.com/activity20181212/dist/js/app.ceabe866.js</code>，那么<code>urlPrefix</code>必须设置为<code>~/activity20181212/dist/</code>，其中<code>~</code>代表页面的协议加域名，即<code>https://www.test.com</code>，或者设置为<code>urlPrefix: &#39;https://www.test.com/activity20181212/dist/&#39;</code>这种绝对路径，因为Sentry服务器SourceMap解析的原理就是读取出错的Javascript文件末尾的SourceMap指令，得到SourceMap文件路径，再与对应<code>Releases</code>下的<code>Artifacts</code>进行匹配，从而进行解析。比如下图中上面4个<code>Artifacts</code>为正确有效的，下面4个为错误的。<br><img src="https://easyread.nosdn.127.net/web/trunk/1545218437248/artifactscompare.png" alt="artifactsCompare"><br>- 如果配置的SourceMap解析失败，可以查看官方的<a href="https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting/" target="_blank" rel="noopener">troubleshooting</a></li>
+<li><code>Sentry Webpack Plugin</code>的<code>urlPrefix</code>选项必须正确配置。如果页面URL为<code>https://www.test.com/activity20181212/dist/index.html</code>，报错对应的Javascript为<code>https://www.test.com/activity20181212/dist/js/app.ceabe866.js</code>，那么<code>urlPrefix</code>必须设置为<code>~/activity20181212/dist/</code>，其中<code>~</code>代表页面的协议加域名，即<code>https://www.test.com</code>，或者设置为<code>urlPrefix: &#39;https://www.test.com/activity20181212/dist/&#39;</code>这种绝对路径，因为Sentry服务器SourceMap解析的原理就是读取出错的Javascript文件末尾的SourceMap指令，得到SourceMap文件路径，再与对应<code>Releases</code>下的<code>Artifacts</code>进行匹配，从而进行解析。比如下图中上面4个<code>Artifacts</code>为正确有效的，下面4个为错误的。<br><img src="https://easyreadfs.nosdn.127.net/1592833552277/artifactsCompare.png" alt="artifactsCompare"><br>- 如果配置的SourceMap解析失败，可以查看官方的<a href="https://docs.sentry.io/platforms/javascript/sourcemaps/troubleshooting/" target="_blank" rel="noopener">troubleshooting</a></li>
 </ul>
 <h2 id="其他常用功能"><a href="#其他常用功能" class="headerlink" title="其他常用功能"></a>其他常用功能</h2><p>此处列举一下可能比较常用的Sentry功能，官方文档写的比较清楚，就直接列举出来了：</p>
 <ul>
@@ -226,23 +225,13 @@
 	</div>
 		<footer class="article-footer clearfix">
 
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/前端/">前端</a>
-</div>
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/sentry/">sentry</a><a href="/tags/javascript/">javascript</a><a href="/tags/error/">error</a>
-  </div>
 
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="http://icewind-blog.com/2018/12/11/integrate-sentry-with-javascript/" data-title="如何使用Sentry监控前端错误 | Icewind Blog" data-tsina="2099631680" class="share clearfix">
+  <div data-url="http://icewind-blog.com/2018/12/11/integrate-sentry-with-javascript/" data-title="Icewind Blog" data-tsina="2099631680" class="share clearfix">
   </div>
 
 </div>
@@ -294,7 +283,7 @@
 		
 			<li><a href="/categories/Node-js/" title="Node.js">Node.js<sup>1</sup></a></li>
 		
-			<li><a href="/categories/前端/" title="前端">前端<sup>25</sup></a></li>
+			<li><a href="/categories/前端/" title="前端">前端<sup>24</sup></a></li>
 		
 			<li><a href="/categories/博客/" title="博客">博客<sup>2</sup></a></li>
 		
