@@ -9,7 +9,7 @@
     
     <meta name="author" content="Icewind">
     
-    <meta name="description" content="本文主要介绍的是采用Storybook管理LOFTER官网新的公共组件库的一些指南和实践经验。">
+    <meta name="description" content="本文主要介绍的是采用Storybook和Gitlab CI/CD搭建和部署LOFTER官网新的公共组件库的一些指南和实践经验。">
     
     
     
@@ -87,7 +87,7 @@
 		
 		</div>
 		
-		<p>本文主要介绍的是采用<code>Storybook</code>管理LOFTER官网新的公共组件库的一些指南和实践经验。</p>
+		<p>本文主要介绍的是采用<code>Storybook</code>和<code>Gitlab CI/CD</code>搭建和部署LOFTER官网新的公共组件库的一些指南和实践经验。</p>
 <a id="more"></a>
 <p>LOFTER的官网是一个覆盖PC和H5的规模比较大的网站，由于其存在时间较长，技术栈较为陈旧，公共组件也比较混乱。所以20年针对LOFTER官网的一些新的更新和维护需求，我们都优先采用相对较新的技术栈（也就是<code>React</code>）来进行开发。而对于一个较为大型的网站来说，使用了新的技术栈，就势必会产生很多的新的组件：UI的、非UI的等等。这些组件如果不能得到妥善的组织和管理，即时使用的是<code>React</code>来开发组件，也会随着规模的扩大而变得难以维护。所以，找到一套能够统一查看和管理LOFTER官网组件的方案势在必行。</p>
 <h2 id="选型"><a href="#选型" class="headerlink" title="选型"></a>选型</h2><h3 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h3><p>针对公共组件库，光靠代码的管理可能还不够，一旦组件的规模到了一定程度后，可视化的组件库文档平台将会非常必要。我们的搭建和选择组件库的主要诉求就是：</p>
@@ -265,7 +265,7 @@
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Frontend/">Frontend</a><a href="/tags/Storybook/">Storybook</a>
+  <span></span> <a href="/tags/Frontend/">Frontend</a><a href="/tags/Storybook/">Storybook</a><a href="/tags/Gitlab/">Gitlab</a><a href="/tags/CI-CD/">CI/CD</a>
   </div>
 
 
@@ -282,6 +282,14 @@
 	
 <nav class="article-nav clearfix">
  
+ <div class="prev">
+ <a href="/2021/01/25/micro-frontends-in-lofter/" title="微前端在网易LOFTER中后台系统中的演进之路">
+  <strong>上一篇：</strong><br>
+  <span>
+  微前端在网易LOFTER中后台系统中的演进之路</span>
+</a>
+</div>
+
 
 <div class="next">
 <a href="/2019/11/18/exprience-of-nodejs-development/" title="Node.js实践经验总结">
@@ -317,7 +325,7 @@
 		
 			<li><a href="/categories/Node-js/" title="Node.js">Node.js<sup>1</sup></a></li>
 		
-			<li><a href="/categories/前端/" title="前端">前端<sup>26</sup></a></li>
+			<li><a href="/categories/前端/" title="前端">前端<sup>27</sup></a></li>
 		
 			<li><a href="/categories/博客/" title="博客">博客<sup>2</sup></a></li>
 		
@@ -336,13 +344,17 @@
 		
 			<li><a href="/tags/AJAX/" title="AJAX">AJAX<sup>1</sup></a></li>
 		
+			<li><a href="/tags/CI-CD/" title="CI/CD">CI/CD<sup>1</sup></a></li>
+		
 			<li><a href="/tags/CSS/" title="CSS">CSS<sup>9</sup></a></li>
 		
 			<li><a href="/tags/CSS3/" title="CSS3">CSS3<sup>1</sup></a></li>
 		
 			<li><a href="/tags/Egg-js/" title="Egg.js">Egg.js<sup>1</sup></a></li>
 		
-			<li><a href="/tags/Frontend/" title="Frontend">Frontend<sup>2</sup></a></li>
+			<li><a href="/tags/Frontend/" title="Frontend">Frontend<sup>3</sup></a></li>
+		
+			<li><a href="/tags/Gitlab/" title="Gitlab">Gitlab<sup>1</sup></a></li>
 		
 			<li><a href="/tags/HTML/" title="HTML">HTML<sup>9</sup></a></li>
 		
@@ -356,6 +368,10 @@
 		
 			<li><a href="/tags/Javscript/" title="Javscript">Javscript<sup>2</sup></a></li>
 		
+			<li><a href="/tags/Lofter/" title="Lofter">Lofter<sup>1</sup></a></li>
+		
+			<li><a href="/tags/Micro-Frontends/" title="Micro Frontends">Micro Frontends<sup>1</sup></a></li>
+		
 			<li><a href="/tags/Node/" title="Node">Node<sup>2</sup></a></li>
 		
 			<li><a href="/tags/Node-js/" title="Node.js">Node.js<sup>1</sup></a></li>
@@ -365,14 +381,6 @@
 			<li><a href="/tags/Rich-text-editor/" title="Rich text editor">Rich text editor<sup>1</sup></a></li>
 		
 			<li><a href="/tags/Sentry/" title="Sentry">Sentry<sup>1</sup></a></li>
-		
-			<li><a href="/tags/Storybook/" title="Storybook">Storybook<sup>1</sup></a></li>
-		
-			<li><a href="/tags/URL/" title="URL">URL<sup>1</sup></a></li>
-		
-			<li><a href="/tags/Vue/" title="Vue">Vue<sup>1</sup></a></li>
-		
-			<li><a href="/tags/Webpack/" title="Webpack">Webpack<sup>1</sup></a></li>
 		
 		</ul>
 </div>
@@ -426,7 +434,7 @@
 		<a href="mailto:liushichuan@163.com" target="_blank" class="icon-email" title="Email Me"></a>
 		
 	</div>
-		<p class="copyright">Powered by <a href="http://zespia.tw/hexo/" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Pacman">Jacman</a> © 2020 
+		<p class="copyright">Powered by <a href="http://zespia.tw/hexo/" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Pacman">Jacman</a> © 2021 
 		
 		<a href="http://icewind-blog.com/about" target="_blank" title="Icewind">Icewind</a>
 		
