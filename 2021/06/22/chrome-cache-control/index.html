@@ -4,16 +4,12 @@
 <head><meta name="generator" content="Hexo 3.8.0">
   <meta charset="UTF-8">
   
-    <title>反转DOM元素子节点顺序 | Icewind Blog</title>
+    <title>Chrome浏览器中Cache-control：no-cache和no-store的区别 | Icewind Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Icewind">
     
-    <meta name="description" content="在微博上看到寒冬winter大神抱怨前端招聘的困难，其中提到了一道Javascript题目，
-
-如何反转一个DOM元素的所有子节点的顺序
-
-就这么个问题，看似简单，想了半天发现自己确实还做不好这题，想着利用数组的reverse方法，而完全没有充分利用到Javascript的原生DOM操作，用中文百度了一番，居然完全搜不到类似结果，还是用英文搜google靠谱…">
+    <meta name="description" content="HTTP Response Headers中的Cache-Control: no-cache和Cache-Control: no-store，看起来都是告知浏览器不要缓存该响应，但是他们是有区别的。有的时候如果没有使用合适的cache值，可能会达不到我们预想的目标。">
     
     
     
@@ -72,12 +68,12 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2014/10/20/reverse-dom-child-nodes/" title="反转DOM元素子节点顺序" itemprop="url">反转DOM元素子节点顺序</a>
+      <a href="/2021/06/22/chrome-cache-control/" title="Chrome浏览器中Cache-control：no-cache和no-store的区别" itemprop="url">Chrome浏览器中Cache-control：no-cache和no-store的区别</a>
   </h1>
   <p class="article-author">By
       <a href="https://icewind7030.github.io/about" title="Icewind" target="_blank">Icewind</a>
   </p><p class="article-time">
-    <time datetime="2014-10-20T07:38:28.000Z" itemprop="datePublished">发表于2014-10-20</time>
+    <time datetime="2021-06-22T07:49:22.000Z" itemprop="datePublished">发表于2021-06-22</time>
     
   </p>
 </header>
@@ -87,30 +83,56 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#常规解释"><span class="toc-number">1.</span> <span class="toc-text">常规解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题表现"><span class="toc-number">2.</span> <span class="toc-text">问题表现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题原因"><span class="toc-number">3.</span> <span class="toc-text">问题原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解决方式"><span class="toc-number">4.</span> <span class="toc-text">解决方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#注意事项"><span class="toc-number">5.</span> <span class="toc-text">注意事项</span></a></li></ol>
 		
 		</div>
 		
-		<p>在微博上看到寒冬winter大神抱怨前端招聘的困难，其中提到了一道Javascript题目，</p>
-<blockquote>
-<p>如何反转一个DOM元素的所有子节点的顺序</p>
-</blockquote>
-<p>就这么个问题，看似简单，想了半天发现自己确实还做不好这题，想着利用数组的reverse方法，而完全没有充分利用到Javascript的原生DOM操作，用中文百度了一番，居然完全搜不到类似结果，还是用英文搜google靠谱…</p>
+		<p><code>HTTP Response Headers</code>中的<code>Cache-Control: no-cache</code>和<code>Cache-Control: no-store</code>，看起来都是告知浏览器不要缓存该响应，但是他们是有区别的。有的时候如果没有使用合适的cache值，可能会达不到我们预想的目标。</p>
 <a id="more"></a>
-<p>本问题的解答是在<a href="http://stackoverflow.com/questions/7942733/reverse-order-of-a-set-of-elements" target="_blank" rel="noopener">stackoverflow-Reverse order of a set of elements</a>上找到，这个社区真是太强太全面了,下面就搬运一下顺便讲讲这个问题下面的让我进一步学习到原生Javascript DOM操作知识的一些改进讨论。</p>
-<p>有一个回答是这样的：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reverseChildNodes</span>(<span class="params">node</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> parentNode = node.parentNode, nextSibling = node.nextSibling,</span><br><span class="line">        frag = node.ownerDocument.createDocumentFragment();</span><br><span class="line">    parentNode.removeChild(node);</span><br><span class="line">    <span class="keyword">while</span>(node.lastChild)</span><br><span class="line">        frag.appendChild(node.lastChild);</span><br><span class="line">    node.appendChild(frag);</span><br><span class="line">    parentNode.insertBefore(node, nextSibling);</span><br><span class="line">    <span class="keyword">return</span> node;</span><br><span class="line">&#125;</span><br><span class="line">reverseChildNodes(<span class="built_in">document</span>.getElementById(<span class="string">'con'</span>));</span><br></pre></td></tr></table></figure></p>
-<p>这个方法初看之下确实已经很简洁了，比我考虑的什么利用数组的reverse方法什么的实际多了，其主要思想是：</p>
+<h2 id="常规解释"><a href="#常规解释" class="headerlink" title="常规解释"></a>常规解释</h2><p>先来看下这2个值的<a href="https://developers.google.com/web/fundamentals/performance/get-started/httpcaching-6" target="_blank" rel="noopener">常规区别解释</a>：</p>
 <blockquote>
-<p>利用<code>DocumentFragment</code>的插入document时,实际插入只是其全部子节点这一特性，来暂时储存循环倒序的子节点。</p>
+<ul>
+<li>no-cache: Somewhat of a misnomer, specifies that content can be cached but, if so, it must be re-validated on each request before being served to a client. This forces the client to check for freshness but allows it to avoid downloading the resource again if it has not changed. Mutually exclusive with no-store.</li>
+<li>no-store: Indicates that the content actually cannot be cached in any way by any primary or intermediate cache. This is a good option for resources that may contain sensitive data, or for resources that will almost certainly change from visit to visit. Mutually exclusive with no-cache.</li>
+</ul>
 </blockquote>
-<p>1.先将要倒序的DOM元素的父节点以及紧邻的同级及节点储存下来<br>2.然后将DOM元素从其父节点移除<br>3.再把储存了倒序节点的<code>DocumentFragment</code>放入原DOM元素中，再用<code>inserBefore()</code>方法插入原位置</p>
-<p>该回答的讨论中另两位朋友却提出了更简洁的方法：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reverseChildNodes</span>(<span class="params">node</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> frag = node.ownerDocument.createDocumentFragment();</span><br><span class="line">    <span class="keyword">while</span>(node.lastChild)</span><br><span class="line">        frag.appendChild(node.lastChild);</span><br><span class="line">    node.appendChild(frag);</span><br><span class="line">&#125;</span><br><span class="line">reverseChildNodes(<span class="built_in">document</span>.getElementById(<span class="string">'con'</span>));</span><br></pre></td></tr></table></figure></p>
-<p>看完这个解答，我才想起来<code>appendChild()</code>的更完整的用法:</p>
-<blockquote>
-<p>appendChild()`方法不只是可以向document的某节点插入一个手动创建的节点，还可以将document中已经存在的节点移动到所需的插入位置。</p>
-</blockquote>
-<p>上面的这个解答很好的利用了这一特性从而大大简化了代码。</p>
-<p>从这个题目的解答中，发现确实缺乏的DOM原生Javascript操作的系统知识，确实可能离阿里的要求还有不少距离，不管怎么样，继续学习吧！</p>
+<p>概括来说，就是这是2个互斥的<code>Response Header</code>：</p>
+<ul>
+<li><code>no-cache</code>并不是说这个资源完全不能被缓存，而是这个资源每次使用缓存前必须到服务端去验证一遍，如果是服务端返回304，代表资源是新鲜的，那么可以直接使用缓存。</li>
+<li><code>no-store</code>则更严格，它表示我们的浏览器在任何时候都不能缓存这个响应，必须重新请求。</li>
+</ul>
+<p>有一点需要注意，如果设置了这2个值中的任意一个，源站到客户端的中间缓存节点都是不会缓存这个响应的。</p>
+<h2 id="问题表现"><a href="#问题表现" class="headerlink" title="问题表现"></a>问题表现</h2><p>但是下面这个情况，在Chrome浏览器中<code>no-cache</code>的表现可能和我们想的不一样：</p>
+<ul>
+<li>假设我们当前访问是<code>A页面</code>，是一篇博客，博客上有一个<strong>关注按钮</strong>，这是一个<strong>SSR</strong>的页面，它的Response Header是中包含了<code>Cache-Control: no-cache</code></li>
+<li>我们点击了<code>A页面</code>的这个关注按钮，发起异步请求，状态更新，这时关注按钮变成了<strong>已关注</strong></li>
+<li>我们再点击<code>A页面</code>中的超链接，跳转到了<code>B页面</code></li>
+<li>然后再点击浏览器的返回按钮，返回到了<code>A页面</code></li>
+<li>此时我们可以看到，<code>A页面</code>的那个按钮状态显示的还是<strong>关注</strong>，而不是我们操作过的<strong>已关注</strong></li>
+<li>我们刷新<code>A页面</code>，按钮的状态恢复正常，显示<strong>已关注</strong></li>
+</ul>
+<p>这就是Chrome浏览器很早就遗留下的表现，与我们通常认为的<code>no-cache</code>机制不太一样。但是由于也没有关于浏览器<strong>前进、后退</strong>的缓存机制的严格规定，而且大部分情况下，这样的机制是可以给用户更快的响应展现的，所以也不能说是一个问题。</p>
+<ul>
+<li><p>Response Headers中含有<code>Cache-Control: no-cache</code><br><img src="https://lofter.lf127.net/1624350598510/cache1.png" alt="cache1"></p>
+</li>
+<li><p>在浏览器返回时直接使用了缓存，并没有验证其新鲜度<br><img src="https://lofter.lf127.net/1624350752276/cache2.png" alt="cache2"></p>
+</li>
+</ul>
+<h2 id="问题原因"><a href="#问题原因" class="headerlink" title="问题原因"></a>问题原因</h2><ul>
+<li>浏览器返回时，浏览器直接提供的是之前缓存的页面<ul>
+<li>我们可以从浏览器<code>devtool-network</code>下看到，在返回时，浏览器直接使用的是<code>disk cache</code>，而没有经过任何新鲜度的检查，这与<code>no-cache</code>的定义好像不符</li>
+</ul>
+</li>
+<li>这不是<code>bfcache</code><ul>
+<li><code>bfcache</code>是浏览器在返回时直接使用内存中的页面，这种情况下，被缓存的页面不会触发<code>onLoad</code>和<code>DOMContentLoaded</code>事件的，只会触发<code>pageShow</code>等事件，而且可以在这个事件中拿到标识<code>event.persisted</code>，来判断页面呈现是否由<code>bfcache</code>触发。</li>
+<li>上面的场景中，页面的<code>onLoad</code>、<code>DOMContentLoaded</code>、<code>pageShow</code>等事件是正常触发的，而<code>event.persisted</code>标识一直为<code>false</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="解决方式"><a href="#解决方式" class="headerlink" title="解决方式"></a>解决方式</h2><p>面对上面的那个问题，不设置Response Headers中的<code>Cache-Control</code>、设置<code>Cache-Control: no-cache</code>亦或者是<code>Cache-Control: max-age=0</code>都不能解决。</p>
+<p>此时就需要使用<code>Cache-Control: no-store</code>的Response Headers了。这样设置，浏览器才不会储存这个SSR页面，从而在返回时也去拉取最新的结果。</p>
+<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><p>一旦设置了<code>Cache-Control: no-store</code>，浏览器就真的完全不存这个响应了，这意味着你<em>右键点击-显示网页源代码</em>，浏览器也都没有可缓存的源代码供你查看，而是会重新发起这个网页的请求才能拿到源代码来显示。</p>
+<p>所以，如果不是一些必要的场景，比如上面的bug fix，<code>no-store</code>还是要慎用的。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -123,7 +145,7 @@
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/Javascript/">Javascript</a><a href="/tags/HTML/">HTML</a>
+  <span></span> <a href="/tags/Chrome/">Chrome</a><a href="/tags/cache/">cache</a>
   </div>
 
 
@@ -131,7 +153,7 @@
 
 <div class="article-share" id="share">
 
-  <div data-url="https://icewind7030.github.io/2014/10/20/reverse-dom-child-nodes/" data-title="反转DOM元素子节点顺序 | Icewind Blog" data-tsina="2099631680" class="share clearfix">
+  <div data-url="https://icewind7030.github.io/2021/06/22/chrome-cache-control/" data-title="Chrome浏览器中Cache-control：no-cache和no-store的区别 | Icewind Blog" data-tsina="2099631680" class="share clearfix">
   </div>
 
 </div>
@@ -140,19 +162,11 @@
 	
 <nav class="article-nav clearfix">
  
- <div class="prev">
- <a href="/2015/07/06/learn-more-about-border-radius/" title="详解border-radius">
-  <strong>上一篇：</strong><br>
-  <span>
-  详解border-radius</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2014/09/28/javascript-data-type-translation/" title="Javascript数据类型转换">
+<a href="/2021/06/22/rem-problem/" title="移动端webview rem单位计算问题">
  <strong>下一篇：</strong><br> 
- <span>Javascript数据类型转换
+ <span>移动端webview rem单位计算问题
 </span>
 </a>
 </div>
@@ -166,7 +180,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
  
- 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#常规解释"><span class="toc-number">1.</span> <span class="toc-text">常规解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题表现"><span class="toc-number">2.</span> <span class="toc-text">问题表现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#问题原因"><span class="toc-number">3.</span> <span class="toc-text">问题原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解决方式"><span class="toc-number">4.</span> <span class="toc-text">解决方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#注意事项"><span class="toc-number">5.</span> <span class="toc-text">注意事项</span></a></li></ol>
  
   </div>
 
